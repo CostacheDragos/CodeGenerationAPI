@@ -1,0 +1,8 @@
+public class <ClassName> {
+    // Generated Properties
+    <Properties : {property | <property.type> <property.name>;}; separator="\n">
+
+    // Generated Methods
+    <Methods : {method | <method.returnType> <method.name>(<method.parameters : {parameter | <parameter.type> <parameter.name>}; separator=", ">){\} }; separator="\n">
+}
+
