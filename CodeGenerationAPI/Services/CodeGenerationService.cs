@@ -6,22 +6,34 @@ namespace CodeGenerationAPI.Services
     public class CodeGenerationService : ICodeGeneratorService
     {
         private readonly string m_classTemplateString;
+        private readonly IFirestoreService m_firestoreService;
 
-        public CodeGenerationService()
+        public CodeGenerationService(IFirestoreService firestoreService)
         {
             m_classTemplateString = File.ReadAllText("E:\\Work\\Facultate\\An 3\\Licenta\\Proj\\CodeGenerationAPI\\Template Strings\\ClassTemplateString.stg");
+            m_firestoreService = firestoreService;
+
         }
 
 
-        public string GenerateCode(ClassModel classModel)
+        public string? GenerateCode(ClassModel classModel)
         {
-            var classTemplate = new Template(m_classTemplateString);
+            try
+            { 
+                var classTemplate = new Template(m_classTemplateString);
 
-            classTemplate.Add("ClassName", classModel.Name);
-            classTemplate.Add("Properties", classModel.Properties);
-            classTemplate.Add("Methods", classModel.Methods);
+                classTemplate.Add("ClassName", classModel.Name);
+                classTemplate.Add("Properties", classModel.Properties);
+                classTemplate.Add("Methods", classModel.Methods);
 
-            return classTemplate.Render();
+                return classTemplate.Render();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
         }
+
     }
 }

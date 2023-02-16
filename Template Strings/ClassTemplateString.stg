@@ -1,8 +1,16 @@
-public class <ClassName> {
+public class <ClassName> 
+{
     // Generated Properties
-    <Properties : {property | <property.type> <property.name>;}; separator="\n">
+    <Properties : {property | <property.accessModifier> <property.type> <property.name><
+            if(property.generateSetter)>{ get; set; \}<
+            elseif(property.generateGetter)>{ get; \}<
+            else>;<
+            endif>}; separator="\n">
 
     // Generated Methods
-    <Methods : {method | <method.returnType> <method.name>(<method.parameters : {parameter | <parameter.type> <parameter.name>}; separator=", ">){\} }; separator="\n">
-}
+    <Methods : {method | <method.accessModifier> <method.returnType> <method.name>(<method.parameters : {parameter | <parameter.type> <parameter.name>}; separator=", ">)
+{
+    throw new NotImplementedException();
+\} }; separator="\n">
 
+}

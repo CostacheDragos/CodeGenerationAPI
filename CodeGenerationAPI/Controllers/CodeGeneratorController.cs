@@ -8,11 +8,11 @@ namespace CodeGenerationAPI.Controllers
 {
     [ApiController]
     [Route("/api/[controller]")]
-    public class TestController : ControllerBase
+    public class CodeGeneratorController : ControllerBase
     {
         private readonly ICodeGeneratorService m_codeGeneratorService;
 
-        public TestController(ICodeGeneratorService codeGeneratorService)
+        public CodeGeneratorController(ICodeGeneratorService codeGeneratorService)
         {
             m_codeGeneratorService = codeGeneratorService;
         }
@@ -20,13 +20,18 @@ namespace CodeGenerationAPI.Controllers
         [HttpPost]
         public IActionResult GenerateCode([FromBody] List<ClassNodeModel> classNodes)
         {
-            Console.WriteLine(classNodes);
             StringBuilder stringBuilder = new StringBuilder();
 
             foreach(var classNode in classNodes)
             {
                 if (classNode.ClassData != null)
-                    stringBuilder.AppendLine(m_codeGeneratorService.GenerateCode(classNode.ClassData));
+                {
+                    string? generatedClass = m_codeGeneratorService.GenerateCode(classNode.ClassData);
+                    if (generatedClass != null)
+                        stringBuilder.AppendLine(generatedClass);
+                    else
+                        return StatusCode(StatusCodes.Status500InternalServerError);
+                }
             }
 
             Console.WriteLine(stringBuilder.ToString());

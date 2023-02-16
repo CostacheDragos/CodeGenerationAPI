@@ -5,6 +5,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddSingleton<ICodeGeneratorService, CodeGenerationService>();
+builder.Services.AddSingleton<IFirestoreService>(sp =>
+{
+    string projectId = builder.Configuration.GetSection("FirebaseProjectId").Value;
+    return new FirestoreService(projectId);
+});
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -17,13 +23,20 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "CorsPolicy",
                               policy =>
                               {
-                                  policy.WithOrigins("http://127.0.0.1:5173")
+                                  policy.AllowAnyOrigin()
                                   .AllowAnyHeader()
-                                  .AllowAnyMethod()
-                                  .AllowCredentials();
+                                  .AllowAnyMethod();
                               });
 });
 
+if (builder.Environment.IsProduction())
+{
+    builder.WebHost.UseKestrel(options =>
+    {
+        int port = 16261;
+        options.ListenAnyIP(port);
+    });
+}
 
 var app = builder.Build();
 
@@ -32,11 +45,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    app.UseCors("CorsPolicy");
 }
 
-app.UseHttpsRedirection();
+app.UseCors("CorsPolicy");
+
+
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
