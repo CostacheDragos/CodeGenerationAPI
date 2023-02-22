@@ -1,0 +1,17 @@
+class(ClassName, Properties, Methods, InheritedClassesNames) ::= <<
+public class $ClassName$ $if(InheritedClassesNames)$:$endif$ $InheritedClassesNames : {name | $name$}; separator=", "$
+{
+    // Generated Properties
+    $Properties : {property | $property.accessModifier$ $property.type$ $property.name$$
+            if(property.generateSetter)$ { get; set; \}
+            $elseif(property.generateGetter)$ { get; \}
+            $else$;
+            $endif$}; separator="\n"$
+
+    // Generated Methods
+    $Methods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$)
+{
+    throw new NotImplementedException();
+\} }; separator="\n"$
+}
+>>

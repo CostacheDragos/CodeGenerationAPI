@@ -8,10 +8,10 @@ namespace ConsoleCodeGenerator1.Models.Class
 {
     public class PropertyModel
     {
-        public string? Name { get; set; }
-        public string? AccessModifier { get; set; }
-        public string? Type { get; set; }
-        public bool GenerateSetter { get; set; }
-        public bool GenerateGetter { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string AccessModifier { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public bool GenerateSetter { get; set; } = false;
+        public bool GenerateGetter { get; set; } = false;
     }
 }

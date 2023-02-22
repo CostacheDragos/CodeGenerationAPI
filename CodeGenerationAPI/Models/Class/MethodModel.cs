@@ -8,9 +8,9 @@ namespace ConsoleCodeGenerator1.Models.Class
 {
     public class MethodModel
     {
-        public string? Name { get; set; }
-        public string? AccessModifier { get; set; }
-        public string? ReturnType { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string AccessModifier { get; set; } = string.Empty;
+        public string ReturnType { get; set; } = string.Empty;
         public List<PropertyModel>? Parameters { get; set; }
     }
 }

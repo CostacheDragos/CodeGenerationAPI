@@ -20,23 +20,12 @@ namespace CodeGenerationAPI.Controllers
         [HttpPost]
         public IActionResult GenerateCode([FromBody] List<ClassNodeModel> classNodes)
         {
-            StringBuilder stringBuilder = new StringBuilder();
+            string generated = m_codeGeneratorService.GenerateCode(classNodes);
 
-            foreach(var classNode in classNodes)
-            {
-                if (classNode.ClassData != null)
-                {
-                    string? generatedClass = m_codeGeneratorService.GenerateCode(classNode.ClassData);
-                    if (generatedClass != null)
-                        stringBuilder.AppendLine(generatedClass);
-                    else
-                        return StatusCode(StatusCodes.Status500InternalServerError);
-                }
-            }
-
-            Console.WriteLine(stringBuilder.ToString());
-
-            return Ok(stringBuilder.ToString());
+            if(generated == string.Empty) 
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            
+            return Ok(generated);
         }
     }
 }
