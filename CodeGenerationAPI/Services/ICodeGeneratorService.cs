@@ -6,6 +6,6 @@ namespace CodeGenerationAPI.Services
     public interface ICodeGeneratorService
     {
         public string GenerateClassCode(ClassModel classModel);
-        public string GenerateCode(List<ClassNodeModel> classNodeModels);
+        public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodeModels);
     }
 }

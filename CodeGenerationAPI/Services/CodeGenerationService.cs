@@ -38,26 +38,27 @@ namespace CodeGenerationAPI.Services
             }
         }
 
-        public string GenerateCode(List<ClassNodeModel> classNodes)
+        // Generates code for an entire class hierarchy
+        // Returns a dictionary in which the keys are the node ids
+        // and the value is the generated code
+        public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodes)
         {
             ResolveInheritance(classNodes);
 
-            
-            StringBuilder stringBuilder = new StringBuilder();
-
+            var result = new Dictionary<string, string>();
             foreach (var classNode in classNodes)
             {
                 string generatedClass = GenerateClassCode(classNode.ClassData);
                 if (generatedClass != string.Empty)
-                    stringBuilder.AppendLine(generatedClass);
+                {
+                    result.Add(classNode.Id, generatedClass);
+                    Console.WriteLine(generatedClass);
+                }
                 else
-                    return string.Empty;
+                    return null;
             }
-
-            Console.WriteLine(stringBuilder.ToString());
-
             
-            return stringBuilder.ToString();
+            return result;
         }
 
         // Based on the data in the received Class nodes, we update the data 

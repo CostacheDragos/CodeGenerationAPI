@@ -20,9 +20,9 @@ namespace CodeGenerationAPI.Controllers
         [HttpPost]
         public IActionResult GenerateCode([FromBody] List<ClassNodeModel> classNodes)
         {
-            string generated = m_codeGeneratorService.GenerateCode(classNodes);
+            var generated = m_codeGeneratorService.GenerateCode(classNodes);
 
-            if(generated == string.Empty) 
+            if(generated == null) 
                 return StatusCode(StatusCodes.Status500InternalServerError);
             
             return Ok(generated);
