@@ -5,7 +5,8 @@ namespace CodeGenerationAPI.Services
 {
     public interface ICodeGeneratorService
     {
-        public string GenerateClassCode(ClassModel classModel);
-        public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodeModels);
+        public string GenerateCSharpClassCode(ClassModel classModel);
+        public string GenerateCppClassCode(ClassModel classModel);
+        public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodeModels, string language);
     }
 }

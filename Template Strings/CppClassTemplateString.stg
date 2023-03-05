@@ -1,0 +1,28 @@
+class(ClassName, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, InheritedClassesNames) ::= <<
+class $ClassName$ $if(InheritedClassesNames)$:$endif$ $InheritedClassesNames : {name | public $name$}; separator=", "$
+{
+// Generated Private Members
+private:
+    $PrivateProperties : {property | $property.type$ $property.name$;}; separator="\n"$
+    
+    $PrivateMethods : {method | $method.returnType$ $method.name$($
+        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$
+
+// Generated Public Members
+public:
+    $PublicProperties : {property | $property.type$ $property.name$;}; separator="\n"$
+
+    $PublicMethods : {method | $method.returnType$ $method.name$($
+        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$
+
+    // Setters & Getters
+    $PublicProperties : {property | $
+            if(property.generateSetter)$void Set$property.name; format="cap"$($property.type$ newValue){ this.$property.name$ = newValue; \}$\n$$endif$$
+            if(property.generateGetter)$$property.type$ Get$property.name; format="cap"$(){ return this.$property.name$; \}$endif$
+            }; separator="\n"$
+    $PrivateProperties : {property | $
+            if(property.generateSetter)$void Set$property.name; format="cap"$($property.type$ newValue){ this.$property.name$ = newValue; \}$\n$$endif$$
+            if(property.generateGetter)$$property.type$ Get$property.name; format="cap"$(){ return this.$property.name$; \}$endif$
+            }; separator="\n"$
+}
+>>

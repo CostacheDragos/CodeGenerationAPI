@@ -1,4 +1,5 @@
-﻿using CodeGenerationAPI.Models.Class;
+﻿using CodeGenerationAPI.Models;
+using CodeGenerationAPI.Models.Class;
 using CodeGenerationAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,9 +19,10 @@ namespace CodeGenerationAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult GenerateCode([FromBody] List<ClassNodeModel> classNodes)
+        public IActionResult GenerateCode([FromBody] CodeGenerationRequestDataModel codeGenerationRequestDataModel)
         {
-            var generated = m_codeGeneratorService.GenerateCode(classNodes);
+            var generated = m_codeGeneratorService.GenerateCode(
+                codeGenerationRequestDataModel.ClassNodes, codeGenerationRequestDataModel.Language);
 
             if(generated == null) 
                 return StatusCode(StatusCodes.Status500InternalServerError);

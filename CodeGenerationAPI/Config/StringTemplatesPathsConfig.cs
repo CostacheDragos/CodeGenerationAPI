@@ -1,0 +1,9 @@
+﻿namespace CodeGenerationAPI.Config
+{
+    public class StringTemplatesPathsConfig
+    {
+        public string CSharpClass { get; set; } = "";
+        public string CppClass { get; set; } = "";
+
+    }
+}

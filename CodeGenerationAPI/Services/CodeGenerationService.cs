@@ -1,29 +1,37 @@
 ﻿using Antlr4.StringTemplate;
+using CodeGenerationAPI.Config;
 using CodeGenerationAPI.Models.Class;
 using ConsoleCodeGenerator1.Models.Class;
 using System.Text;
 
 namespace CodeGenerationAPI.Services
 {
+    public enum Languages
+    {
+        CSharp,
+        Cpp,
+    }
+
     public class CodeGenerationService : ICodeGeneratorService
     {
-        private readonly string m_classTemplateString;
         private readonly IFirestoreService m_firestoreService;
+        private readonly StringTemplatesPathsConfig m_stringTemplatesPathsConfig;
 
-        public CodeGenerationService(IFirestoreService firestoreService)
+        public CodeGenerationService(IFirestoreService firestoreService, StringTemplatesPathsConfig stringTemplatesPathsConfig)
         {
-            m_classTemplateString = File.ReadAllText("E:\\Work\\Facultate\\An 3\\Licenta\\Proj\\CodeGenerationAPI\\Template Strings\\ClassTemplateString2.stg");
             m_firestoreService = firestoreService;
-
+            m_stringTemplatesPathsConfig = stringTemplatesPathsConfig;
         }
 
-        // Generates code for a single class
-        public string GenerateClassCode(ClassModel classModel)
+        // Generates code for a single C# class
+        public string GenerateCSharpClassCode(ClassModel classModel)
         {
             try
             {
-                var templateGroup = new TemplateGroupString("class-template", m_classTemplateString, '$', '$');
+                string classTemplateString = File.ReadAllText(m_stringTemplatesPathsConfig.CSharpClass);
+                var templateGroup = new TemplateGroupString("class-template", classTemplateString, '$', '$');
                 var classTemplate = templateGroup.GetInstanceOf("class");
+
                 classTemplate.Add("ClassName", classModel.Name);
                 classTemplate.Add("Properties", classModel.Properties);
                 classTemplate.Add("Methods", classModel.Methods);
@@ -38,17 +46,58 @@ namespace CodeGenerationAPI.Services
             }
         }
 
+        // Generates code for a single C++ class
+        public string GenerateCppClassCode(ClassModel classModel)
+        {
+            try
+            {
+                string classTemplateString = File.ReadAllText(m_stringTemplatesPathsConfig.CppClass);
+                var templateGroup = new TemplateGroupString("class-template", classTemplateString, '$', '$');
+                templateGroup.RegisterRenderer(typeof(String), new StringRenderer());
+
+                var classTemplate = templateGroup.GetInstanceOf("class");
+                classTemplate.Add("ClassName", classModel.Name);
+
+                classTemplate.Add("PublicProperties", 
+                    classModel.Properties.Where(prop => prop.AccessModifier == "public"));
+                classTemplate.Add("PrivateProperties",
+                    classModel.Properties.Where(prop => prop.AccessModifier == "private"));
+
+                classTemplate.Add("PublicMethods", classModel.Methods.Where(met => met.AccessModifier == "public"));
+                classTemplate.Add("PrivateMethods", classModel.Methods.Where(met => met.AccessModifier == "private"));
+
+                classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
+
+                return classTemplate.Render();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return string.Empty;
+            }
+        }
+
         // Generates code for an entire class hierarchy
         // Returns a dictionary in which the keys are the node ids
         // and the value is the generated code
-        public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodes)
+        public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodes, string language)
         {
             ResolveInheritance(classNodes);
 
             var result = new Dictionary<string, string>();
             foreach (var classNode in classNodes)
             {
-                string generatedClass = GenerateClassCode(classNode.ClassData);
+                string generatedClass = string.Empty;
+                switch (language)
+                {
+                    case nameof(Languages.CSharp):
+                        generatedClass = GenerateCSharpClassCode(classNode.ClassData);
+                        break;
+                    case nameof(Languages.Cpp):
+                        generatedClass = GenerateCppClassCode(classNode.ClassData);
+                        break;
+                }
+
                 if (generatedClass != string.Empty)
                 {
                     result.Add(classNode.Id, generatedClass);
@@ -73,7 +122,7 @@ namespace CodeGenerationAPI.Services
             foreach(var classNode in classNodes)
                 classes.Add(classNode.Id, classNode.ClassData);
 
-            // Iterate trough the node list once more and the necessary class data
+            // Iterate trough the node list once more and populate the necessary class data
             foreach (var classNode in classNodes)
                 if (classNode.ParentClassNodesIds != null)
                     foreach (var parentClassId in classNode.ParentClassNodesIds)

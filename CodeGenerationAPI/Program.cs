@@ -1,3 +1,4 @@
+using CodeGenerationAPI.Config;
 using CodeGenerationAPI.Services;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 
@@ -11,6 +12,8 @@ builder.Services.AddSingleton<IFirestoreService>(sp =>
     return new FirestoreService(projectId);
 });
 
+// Get the templates paths from appsettings.json
+builder.Services.AddSingleton(builder.Configuration.GetSection("TemplatePaths").Get<StringTemplatesPathsConfig>());
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
