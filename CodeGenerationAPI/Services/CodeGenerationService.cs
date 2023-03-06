@@ -10,6 +10,7 @@ namespace CodeGenerationAPI.Services
     {
         CSharp,
         Cpp,
+        Java,
     }
 
     public class CodeGenerationService : ICodeGeneratorService
@@ -58,6 +59,7 @@ namespace CodeGenerationAPI.Services
                 var classTemplate = templateGroup.GetInstanceOf("class");
                 classTemplate.Add("ClassName", classModel.Name);
 
+                classTemplate.Add("Properties", classModel.Properties);
                 classTemplate.Add("PublicProperties", 
                     classModel.Properties.Where(prop => prop.AccessModifier == "public"));
                 classTemplate.Add("PrivateProperties",
@@ -66,6 +68,31 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("PublicMethods", classModel.Methods.Where(met => met.AccessModifier == "public"));
                 classTemplate.Add("PrivateMethods", classModel.Methods.Where(met => met.AccessModifier == "private"));
 
+                classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
+
+                return classTemplate.Render();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return string.Empty;
+            }
+        }
+
+        // Generates code for a single Java class
+        public string GenerateJavaClassCode(ClassModel classModel)
+        {
+            try
+            {
+                string classTemplateString = File.ReadAllText(m_stringTemplatesPathsConfig.JavaClass);
+                var templateGroup = new TemplateGroupString("class-template", classTemplateString, '$', '$');
+                templateGroup.RegisterRenderer(typeof(String), new StringRenderer());
+
+                var classTemplate = templateGroup.GetInstanceOf("class");
+                
+                classTemplate.Add("ClassName", classModel.Name);
+                classTemplate.Add("Properties", classModel.Properties);
+                classTemplate.Add("Methods", classModel.Methods);
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
 
                 return classTemplate.Render();
@@ -95,6 +122,9 @@ namespace CodeGenerationAPI.Services
                         break;
                     case nameof(Languages.Cpp):
                         generatedClass = GenerateCppClassCode(classNode.ClassData);
+                        break;
+                    case nameof(Languages.Java):
+                        generatedClass = GenerateJavaClassCode(classNode.ClassData);
                         break;
                 }
 

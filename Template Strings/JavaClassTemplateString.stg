@@ -1,0 +1,19 @@
+class(ClassName, Properties, Methods, InheritedClassesNames) ::= <<
+public class $ClassName$ $if(InheritedClassesNames)$extends$endif$ $InheritedClassesNames : {name | $name$}; separator=", "$ {
+    // Generated Properties
+    $Properties : {property | $property.accessModifier$ $property.type$ $property.name$}; separator="\n"$
+
+    // Generated Methods
+    $Methods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$) {
+    throw new UnsupportedOperationException();
+\} }; separator="\n"$
+
+    // Setters & Getters
+    $Properties : {property | $
+            if(property.generateSetter)$void Set$property.name; format="cap"$($property.type$ newValue){ this.$property.name$ = newValue; \}$\n$$endif$
+            }$
+    $Properties : {property | $
+            if(property.generateGetter)$$property.type$ Get$property.name; format="cap"$(){ return this.$property.name$; \}$\n$$endif$
+            }$
+}
+>>
