@@ -17,3 +17,17 @@ public class $ClassName$ $if(InheritedClassesNames)$extends$endif$ $InheritedCla
             }$
 }
 >>
+
+interface(InterfaceName, Properties, PrivateMethods, PublicMethods, InheritedInterfacesNames) ::= <<
+public interface $InterfaceName$ $if(InheritedInterfacesNames)$extends$endif$ $InheritedInterfacesNames : {name | $name$}; separator=", "$ {
+    // Generated Properties
+    $Properties : {property | $property.type$ $property.name$;}; separator="\n"$
+
+    // Generated Methods
+    $PrivateMethods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$) {
+    throw new UnsupportedOperationException();
+\} }; separator="\n"$
+    $PublicMethods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);
+    }; separator="\n"$
+}
+>>

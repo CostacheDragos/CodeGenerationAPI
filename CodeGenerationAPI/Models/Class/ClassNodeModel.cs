@@ -1,4 +1,4 @@
-﻿using ConsoleCodeGenerator1.Models.Class;
+﻿using CodeGenerationAPI.Models.Class;
 
 namespace CodeGenerationAPI.Models.Class
 {
@@ -9,5 +9,7 @@ namespace CodeGenerationAPI.Models.Class
         public ClassModel ClassData { get; set; } = new();
 
         public List<string>? ParentClassNodesIds { get; set; }
+
+        public bool isInterface { get; set; } = false;
     }
 }

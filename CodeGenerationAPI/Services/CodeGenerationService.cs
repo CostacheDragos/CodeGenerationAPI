@@ -1,7 +1,6 @@
 ﻿using Antlr4.StringTemplate;
 using CodeGenerationAPI.Config;
 using CodeGenerationAPI.Models.Class;
-using ConsoleCodeGenerator1.Models.Class;
 using System.Text;
 
 namespace CodeGenerationAPI.Services
@@ -46,6 +45,33 @@ namespace CodeGenerationAPI.Services
                 return string.Empty;
             }
         }
+        
+        // Generates code for a single C# interface
+        public string GenerateCSharpInterfaceCode(ClassModel interfaceModel)
+        {
+            try
+            {
+                string classTemplateString = File.ReadAllText(m_stringTemplatesPathsConfig.CSharpClass);
+                var templateGroup = new TemplateGroupString("class-template", classTemplateString, '$', '$');
+                var classTemplate = templateGroup.GetInstanceOf("interface");
+
+                classTemplate.Add("InterfaceName", interfaceModel.Name);
+                classTemplate.Add("Properties", interfaceModel.Properties);
+                
+                classTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
+                classTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
+                
+                classTemplate.Add("InheritedInterfacesNames", interfaceModel.InheritedClassesNames);
+
+                return classTemplate.Render();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return string.Empty;
+            }
+        }
+
 
         // Generates code for a single C++ class
         public string GenerateCppClassCode(ClassModel classModel)
@@ -79,6 +105,39 @@ namespace CodeGenerationAPI.Services
             }
         }
 
+        // Generates code for a single C++ interface (abstract class)
+        public string GenerateCppInterfaceCode(ClassModel interfaceModel)
+        {
+            try
+            {
+                string classTemplateString = File.ReadAllText(m_stringTemplatesPathsConfig.CppClass);
+                var templateGroup = new TemplateGroupString("class-template", classTemplateString, '$', '$');
+                templateGroup.RegisterRenderer(typeof(String), new StringRenderer());
+
+                var classTemplate = templateGroup.GetInstanceOf("interface");
+                classTemplate.Add("ClassName", interfaceModel.Name);
+
+                classTemplate.Add("Properties", interfaceModel.Properties);
+                classTemplate.Add("PublicProperties",
+                    interfaceModel.Properties.Where(prop => prop.AccessModifier == "public"));
+                classTemplate.Add("PrivateProperties",
+                    interfaceModel.Properties.Where(prop => prop.AccessModifier == "private"));
+
+                classTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
+                classTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
+
+                classTemplate.Add("InheritedClassesNames", interfaceModel.InheritedClassesNames);
+
+                return classTemplate.Render();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return string.Empty;
+            }
+        }
+
+
         // Generates code for a single Java class
         public string GenerateJavaClassCode(ClassModel classModel)
         {
@@ -103,6 +162,34 @@ namespace CodeGenerationAPI.Services
                 return string.Empty;
             }
         }
+        // Generates code for a single Java class
+        public string GenerateJavaInterfaceCode(ClassModel interfaceModel)
+        {
+            try
+            {
+                string classTemplateString = File.ReadAllText(m_stringTemplatesPathsConfig.JavaClass);
+                var templateGroup = new TemplateGroupString("class-template", classTemplateString, '$', '$');
+                templateGroup.RegisterRenderer(typeof(String), new StringRenderer());
+
+                var classTemplate = templateGroup.GetInstanceOf("interface");
+                
+                classTemplate.Add("InterfaceName", interfaceModel.Name);
+                classTemplate.Add("Properties", interfaceModel.Properties);
+
+                classTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
+                classTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
+                
+                classTemplate.Add("InheritedInterfacesNames", interfaceModel.InheritedClassesNames);
+
+                return classTemplate.Render();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return string.Empty;
+            }
+        }
+
 
         // Generates code for an entire class hierarchy
         // Returns a dictionary in which the keys are the node ids
@@ -118,13 +205,16 @@ namespace CodeGenerationAPI.Services
                 switch (language)
                 {
                     case nameof(Languages.CSharp):
-                        generatedClass = GenerateCSharpClassCode(classNode.ClassData);
+                        generatedClass = classNode.isInterface ? GenerateCSharpInterfaceCode(classNode.ClassData) :
+                                                                 GenerateCSharpClassCode(classNode.ClassData);
                         break;
                     case nameof(Languages.Cpp):
-                        generatedClass = GenerateCppClassCode(classNode.ClassData);
+                        generatedClass = classNode.isInterface ? GenerateCppInterfaceCode(classNode.ClassData) :
+                                                                 GenerateCppClassCode(classNode.ClassData);
                         break;
                     case nameof(Languages.Java):
-                        generatedClass = GenerateJavaClassCode(classNode.ClassData);
+                        generatedClass = classNode.isInterface ? GenerateJavaInterfaceCode(classNode.ClassData) :
+                                                                 GenerateJavaClassCode(classNode.ClassData);
                         break;
                 }
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleCodeGenerator1.Models.Class
+namespace CodeGenerationAPI.Models.Class
 {
     public class MethodModel
     {

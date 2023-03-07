@@ -7,11 +7,30 @@ public class $ClassName$ $if(InheritedClassesNames)$:$endif$ $InheritedClassesNa
             $elseif(property.generateGetter)$ { get; \}
             $else$;
             $endif$}; separator="\n"$
-
     // Generated Methods
     $Methods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$)
 {
     throw new NotImplementedException();
 \} }; separator="\n"$
+}
+>>
+
+
+interface(InterfaceName, Properties, PrivateMethods, PublicMethods, InheritedInterfacesNames) ::= <<
+public interface $InterfaceName$ $if(InheritedInterfacesNames)$:$endif$ $InheritedInterfacesNames : {name | $name$}; separator=", "$
+{
+    // Generated Properties
+    $Properties : {property | $property.type$ $property.name$$
+            if(property.generateSetter)$ { get; set; \}
+            $elseif(property.generateGetter)$ { get; \}
+            $else$;
+            $endif$}; separator="\n"$
+    // Generated Methods
+    $PrivateMethods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$)
+{
+    throw new NotImplementedException();
+\} }; separator="\n"$
+    $PublicMethods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);
+    }; separator="\n"$
 }
 >>
