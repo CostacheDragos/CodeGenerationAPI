@@ -1,5 +1,8 @@
-class(ClassName, Properties, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, InheritedClassesNames) ::= <<
-class $ClassName$ $if(InheritedClassesNames)$:$endif$ $InheritedClassesNames : {name | public $name$}; separator=", "$
+class(ClassName, Properties, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, InheritedClassesNames, ImplementedInterfacesNames) ::= <<
+class $ClassName$ $if(InheritedClassesNames || ImplementedInterfacesNames)$:$endif$ $
+                    InheritedClassesNames : {name | public $name$}; separator=", "$$
+                   if(InheritedClassesNames && ImplementedInterfacesNames)$, $endif$$
+                    ImplementedInterfacesNames : {name | public $name$}; separator=", "$
 {
 // Generated Private Members
 private:
@@ -25,8 +28,11 @@ public:
 >>
 
 
-interface(ClassName, Properties, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, InheritedClassesNames) ::= <<
-class $ClassName$ $if(InheritedClassesNames)$:$endif$ $InheritedClassesNames : {name | public $name$}; separator=", "$
+interface(ClassName, Properties, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, InheritedClassesNames, ImplementedInterfacesNames) ::= <<
+class $ClassName$ $if(InheritedClassesNames || ImplementedInterfacesNames)$:$endif$ $
+                    InheritedClassesNames : {name | public $name$}; separator=", "$$
+                   if(InheritedClassesNames && ImplementedInterfacesNames)$, $endif$$
+                    ImplementedInterfacesNames : {name | public $name$}; separator=", "$
 {
 // Generated Private Members
 private:

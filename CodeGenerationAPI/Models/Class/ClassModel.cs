@@ -12,5 +12,6 @@ namespace CodeGenerationAPI.Models.Class
         public List<PropertyModel> Properties { get; set; } = new();
         public List<MethodModel> Methods { get; set; } = new();
         public List<string>? InheritedClassesNames { get; set; }
+        public List<string>? ImplementedInterfacesNames { get; set; }
     }
 }

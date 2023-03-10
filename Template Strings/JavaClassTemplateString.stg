@@ -1,5 +1,6 @@
-class(ClassName, Properties, Methods, InheritedClassesNames) ::= <<
-public class $ClassName$ $if(InheritedClassesNames)$extends$endif$ $InheritedClassesNames : {name | $name$}; separator=", "$ {
+class(ClassName, Properties, Methods, InheritedClassesNames, ImplementedInterfacesNames) ::= <<
+public class $ClassName$$if(InheritedClassesNames)$ extends$endif$ $InheritedClassesNames : {name | $name$}; separator=", "$$
+                         if(ImplementedInterfacesNames)$ implements$endif$ $ImplementedInterfacesNames : {name | $name$}; separator=", "$ {
     // Generated Properties
     $Properties : {property | $property.accessModifier$ $property.type$ $property.name$}; separator="\n"$
 

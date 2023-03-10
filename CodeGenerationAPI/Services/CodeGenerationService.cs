@@ -37,6 +37,7 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("Properties", classModel.Properties);
                 classTemplate.Add("Methods", classModel.Methods);
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
+                classTemplate.Add("ImplementedInterfacesNames", classModel.ImplementedInterfacesNames);
 
                 return classTemplate.Render();
             }
@@ -64,7 +65,7 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
                 classTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
                 
-                classTemplate.Add("InheritedInterfacesNames", interfaceModel.InheritedClassesNames);
+                classTemplate.Add("InheritedInterfacesNames", interfaceModel.ImplementedInterfacesNames);
 
                 return classTemplate.Render();
             }
@@ -98,6 +99,7 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("PrivateMethods", classModel.Methods.Where(met => met.AccessModifier == "private"));
 
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
+                classTemplate.Add("ImplementedInterfacesNames", classModel.ImplementedInterfacesNames);
 
                 return classTemplate.Render();
             }
@@ -130,6 +132,7 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
 
                 classTemplate.Add("InheritedClassesNames", interfaceModel.InheritedClassesNames);
+                classTemplate.Add("ImplementedInterfacesNames", interfaceModel.ImplementedInterfacesNames);
 
                 return classTemplate.Render();
             }
@@ -156,6 +159,7 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("Properties", classModel.Properties);
                 classTemplate.Add("Methods", classModel.Methods);
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
+                classTemplate.Add("ImplementedInterfacesNames", classModel.ImplementedInterfacesNames);
 
                 return classTemplate.Render();
             }
@@ -184,7 +188,7 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
                 classTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
                 
-                classTemplate.Add("InheritedInterfacesNames", interfaceModel.InheritedClassesNames);
+                classTemplate.Add("InheritedInterfacesNames", interfaceModel.ImplementedInterfacesNames);
 
                 return classTemplate.Render();
             }
@@ -250,17 +254,23 @@ namespace CodeGenerationAPI.Services
                 {
                     uint numberOfInheritedClasses = 0;
                     foreach (var parentClassId in classNode.ParentClassNodesIds)
-                    {
                         if (!classes[parentClassId].isInterface)
+                        {
                             numberOfInheritedClasses++;
 
-                        if (language == nameof(Languages.CSharp) || language == nameof(Languages.Java))
-                            CheckJavaAndCSharpInheritanceValidity(classNode.ClassData.Name, numberOfInheritedClasses, classNode.isInterface);
+                            if (language == nameof(Languages.CSharp) || language == nameof(Languages.Java))
+                                CheckJavaAndCSharpInheritanceValidity(classNode.ClassData.Name, numberOfInheritedClasses, classNode.isInterface);
 
-                        if (classNode.ClassData.InheritedClassesNames == null)
-                            classNode.ClassData.InheritedClassesNames = new();
-                        classNode.ClassData.InheritedClassesNames.Add(classes[parentClassId].ClassData.Name);
-                    }
+                            if (classNode.ClassData.InheritedClassesNames == null)
+                                classNode.ClassData.InheritedClassesNames = new();
+                            classNode.ClassData.InheritedClassesNames.Add(classes[parentClassId].ClassData.Name);
+                        }
+                        else
+                        {
+                            if (classNode.ClassData.ImplementedInterfacesNames == null)
+                                classNode.ClassData.ImplementedInterfacesNames = new();
+                            classNode.ClassData.ImplementedInterfacesNames.Add(classes[parentClassId].ClassData.Name);
+                        }
                 }
         }
         // Java and C# have constraints on how many classes a class can inherit,
