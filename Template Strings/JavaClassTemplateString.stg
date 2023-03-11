@@ -1,4 +1,4 @@
-class(ClassName, Properties, Methods, InheritedClassesNames, ImplementedInterfacesNames) ::= <<
+class(ClassName, Properties, Methods, OverriddenMethods, InheritedClassesNames, ImplementedInterfacesNames) ::= <<
 public class $ClassName$$if(InheritedClassesNames)$ extends$endif$ $InheritedClassesNames : {name | $name$}; separator=", "$$
                          if(ImplementedInterfacesNames)$ implements$endif$ $ImplementedInterfacesNames : {name | $name$}; separator=", "$ {
     // Generated Properties
@@ -6,6 +6,10 @@ public class $ClassName$$if(InheritedClassesNames)$ extends$endif$ $InheritedCla
 
     // Generated Methods
     $Methods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$) {
+    throw new UnsupportedOperationException();
+\} }; separator="\n"$
+    // Overridden Methods
+    $OverriddenMethods : {method | @Override$\n$$method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$) {
     throw new UnsupportedOperationException();
 \} }; separator="\n"$
 

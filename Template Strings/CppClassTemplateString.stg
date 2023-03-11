@@ -1,4 +1,5 @@
-class(ClassName, Properties, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, InheritedClassesNames, ImplementedInterfacesNames) ::= <<
+class(ClassName, Properties, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, OverriddenMethods,
+ InheritedClassesNames, ImplementedInterfacesNames) ::= <<
 class $ClassName$ $if(InheritedClassesNames || ImplementedInterfacesNames)$:$endif$ $
                     InheritedClassesNames : {name | public $name$}; separator=", "$$
                    if(InheritedClassesNames && ImplementedInterfacesNames)$, $endif$$
@@ -16,6 +17,9 @@ public:
 
     $PublicMethods : {method | $method.returnType$ $method.name$($
         method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$
+
+    $OverriddenMethods : {method | $method.returnType$ $method.name$($
+        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$) override;}; separator="\n"$
 
     // Setters & Getters
     $Properties : {property | $

@@ -35,7 +35,10 @@ namespace CodeGenerationAPI.Services
 
                 classTemplate.Add("ClassName", classModel.Name);
                 classTemplate.Add("Properties", classModel.Properties);
+
                 classTemplate.Add("Methods", classModel.Methods);
+                classTemplate.Add("OverriddenMethods", classModel.OverriddenMethods);
+
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
                 classTemplate.Add("ImplementedInterfacesNames", classModel.ImplementedInterfacesNames);
 
@@ -97,6 +100,7 @@ namespace CodeGenerationAPI.Services
 
                 classTemplate.Add("PublicMethods", classModel.Methods.Where(met => met.AccessModifier == "public"));
                 classTemplate.Add("PrivateMethods", classModel.Methods.Where(met => met.AccessModifier == "private"));
+                classTemplate.Add("OverriddenMethods", classModel.OverriddenMethods);
 
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
                 classTemplate.Add("ImplementedInterfacesNames", classModel.ImplementedInterfacesNames);
@@ -157,7 +161,10 @@ namespace CodeGenerationAPI.Services
                 
                 classTemplate.Add("ClassName", classModel.Name);
                 classTemplate.Add("Properties", classModel.Properties);
+
                 classTemplate.Add("Methods", classModel.Methods);
+                classTemplate.Add("OverriddenMethods", classModel.OverriddenMethods);
+
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
                 classTemplate.Add("ImplementedInterfacesNames", classModel.ImplementedInterfacesNames);
 
@@ -254,6 +261,8 @@ namespace CodeGenerationAPI.Services
                 {
                     uint numberOfInheritedClasses = 0;
                     foreach (var parentClassId in classNode.ParentClassNodesIds)
+                        // Add the names of the inherited classes and implemented interfaces to the class data
+                        // so that they can be represented in the string template
                         if (!classes[parentClassId].isInterface)
                         {
                             numberOfInheritedClasses++;
@@ -272,7 +281,55 @@ namespace CodeGenerationAPI.Services
                             classNode.ClassData.ImplementedInterfacesNames.Add(classes[parentClassId].ClassData.Name);
                         }
                 }
+
+            // After finishing the check that all inheritances and implementations
+            // are valid, add the overridden methods to classes that implement interfaces
+            foreach (var classNode in classNodes)
+                if (!classNode.isInterface && classNode.ClassData.ImplementedInterfacesNames != null)
+                    AddOverriddenMethodsAndProps(classNode, classes, language);
         }
+        // Adds methods from ancestor interfaces into the implementation class
+        private void AddOverriddenMethodsAndProps(ClassNodeModel implementingClass, Dictionary<string, ClassNodeModel> classNodesCollection, string language)
+        {
+            if (implementingClass.ClassData.OverriddenMethods == null)
+                implementingClass.ClassData.OverriddenMethods = new();
+
+            // Go up the inheritance tree checking interface ancestors only, until no interface ancestor is left
+            Stack<ClassNodeModel> ancestors = new();
+            Action<ClassNodeModel> addCurrentClassInterfaceParentsToAncestorsStack = currentClassNode =>
+            {
+                if (currentClassNode.ParentClassNodesIds == null)
+                    return;
+
+                foreach (var parentClassId in currentClassNode.ParentClassNodesIds)
+                    if (classNodesCollection[parentClassId].isInterface)
+                        ancestors.Push(classNodesCollection[parentClassId]);
+            };
+
+            // Add the first elements to the stack
+            ClassNodeModel currentClassNode;
+            addCurrentClassInterfaceParentsToAncestorsStack(implementingClass);
+
+            // Start a DFS exploration up the inheritance tree
+            while(ancestors.Count != 0)
+            {
+                // Get the next class node
+                currentClassNode = ancestors.Pop();
+
+                // Add the current interface methods to the overridden list of the implementing class
+                // Note: only methods that are marked as public in the interfaces will be overridden
+                implementingClass.ClassData.OverriddenMethods.AddRange(
+                    currentClassNode.ClassData.Methods.Where(met => met.AccessModifier == "public"));
+
+                // If the code generation language is C#, we need to also add any auto implemented
+                // properties that we find in ancestor interfaces
+                if(language == nameof(Languages.CSharp))
+                    implementingClass.ClassData.Properties.AddRange(currentClassNode.ClassData.Properties);
+               
+                addCurrentClassInterfaceParentsToAncestorsStack(currentClassNode);
+            }
+        }
+
         // Java and C# have constraints on how many classes a class can inherit,
         // this method is used in the resolve inheritance method in order to
         // signal if any given class does not meet the language requirements

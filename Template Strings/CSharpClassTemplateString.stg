@@ -1,4 +1,4 @@
-class(ClassName, Properties, Methods, InheritedClassesNames, ImplementedInterfacesNames) ::= <<
+class(ClassName, Properties, Methods, OverriddenMethods, InheritedClassesNames, ImplementedInterfacesNames) ::= <<
 public class $ClassName$ $if(InheritedClassesNames || ImplementedInterfacesNames)$:$endif$ $
                             InheritedClassesNames : {name | $name$}; separator=", "$$
                           if(InheritedClassesNames && ImplementedInterfacesNames)$, $endif$$
@@ -6,12 +6,18 @@ public class $ClassName$ $if(InheritedClassesNames || ImplementedInterfacesNames
 {
     // Generated Properties
     $Properties : {property | $property.accessModifier$ $property.type$ $property.name$$
-            if(property.generateSetter)$ { get; set; \}
-            $elseif(property.generateGetter)$ { get; \}
-            $else$;
-            $endif$}; separator="\n"$
+            if(property.generateSetter)$ { get; set; \}$
+            elseif(property.generateGetter)$ { get; \}$
+            else$;$
+            endif$}; separator="\n"$
     // Generated Methods
     $Methods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$)
+{
+    throw new NotImplementedException();
+\} }; separator="\n"$
+
+    // Overridden Methods
+    $OverriddenMethods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$)
 {
     throw new NotImplementedException();
 \} }; separator="\n"$
@@ -24,10 +30,10 @@ public interface $InterfaceName$ $if(InheritedInterfacesNames)$:$endif$ $Inherit
 {
     // Generated Properties
     $Properties : {property | $property.type$ $property.name$$
-            if(property.generateSetter)$ { get; set; \}
-            $elseif(property.generateGetter)$ { get; \}
-            $else$;
-            $endif$}; separator="\n"$
+            if(property.generateSetter)$ { get; set; \}$
+            elseif(property.generateGetter)$ { get; \}$
+            else$;$
+            endif$}; separator="\n"$
     // Generated Methods
     $PrivateMethods : {method | $method.accessModifier$ $method.returnType$ $method.name$($method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$)
 {

@@ -13,5 +13,6 @@ namespace CodeGenerationAPI.Models.Class
         public List<MethodModel> Methods { get; set; } = new();
         public List<string>? InheritedClassesNames { get; set; }
         public List<string>? ImplementedInterfacesNames { get; set; }
+        public List<MethodModel>? OverriddenMethods { get; set; }
     }
 }
