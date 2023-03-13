@@ -3,6 +3,7 @@ using CodeGenerationAPI.Config;
 using CodeGenerationAPI.Models.Class;
 using CodeGenerationAPI.Utility;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace CodeGenerationAPI.Services
 {
@@ -212,6 +213,10 @@ namespace CodeGenerationAPI.Services
         // and the value is the generated code
         public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodes, string language)
         {
+            // Check the naming validity of the provided data
+            foreach (var classNode in classNodes)
+                CheckNamingValidity(classNode.ClassData);
+            
             ResolveInheritance(classNodes, language);
 
             var result = new Dictionary<string, string>();
@@ -333,7 +338,7 @@ namespace CodeGenerationAPI.Services
         // Java and C# have constraints on how many classes a class can inherit,
         // this method is used in the resolve inheritance method in order to
         // signal if any given class does not meet the language requirements
-        private bool CheckJavaAndCSharpInheritanceValidity(string className, uint numberOfInheritedClasses, bool isInterface)
+        private void CheckJavaAndCSharpInheritanceValidity(string className, uint numberOfInheritedClasses, bool isInterface)
         {
             // If the model is an interface and it inherits any regular class, it is incorrect
             if (isInterface && numberOfInheritedClasses > 0)
@@ -343,10 +348,7 @@ namespace CodeGenerationAPI.Services
             if(!isInterface && numberOfInheritedClasses > 1)
                 throw new GenerationException($"Class \"{className}\" inherits more than one regular classes." +
                     $" The chosen code generation language does not allow this type of inheritance.");
-
-            return true;
         }
-
 
         // Checks the validity of the provided models for Java interfaces
         // Throws a GenerationException if not valid
@@ -357,6 +359,57 @@ namespace CodeGenerationAPI.Services
             if (privateProps.Any())
                 throw new GenerationException($"Private property found in the \"{interfaceModel.Name}\" interface, " +
                     "the chosen language does not allow private properties in interfaces!");
+        }
+
+        // Checks if all the names in a class model are valid (class name, method names, return types etc)
+        // Throws a GenerationException if an invalid name is found
+        private void CheckNamingValidity(ClassModel classModel)
+        {
+            // Define the accepted pattern
+            Regex namingPatternRegex = new Regex("^[A-Za-z][A-Za-z0-9_]*$");
+
+            // Check the class name
+            if(!namingPatternRegex.IsMatch(classModel.Name))
+                throw new GenerationException($"The name of the class \"{classModel.Name}\" is not valid!");
+
+            // Check properties names and types
+            foreach(var property in classModel.Properties)
+            {
+                if (!namingPatternRegex.IsMatch(property.Name))
+                    throw new GenerationException($"The name of the property \"{property.Name}\", from the class " +
+                        $"\"{classModel.Name}\", is not valid!");
+
+                if (!namingPatternRegex.IsMatch(property.Type))
+                    throw new GenerationException($"The type name of the property \"{property.Name}\", from the class " +
+                        $"\"{classModel.Name}\", is not valid!");
+            }
+
+            // Check method names and return types, as well as parameter names and types
+            foreach(var method in classModel.Methods)
+            {
+                if (!namingPatternRegex.IsMatch(method.Name))
+                    throw new GenerationException($"The name of the method \"{method.Name}\", from the class " +
+                        $"\"{classModel.Name}\", is not valid!");
+
+                if (!namingPatternRegex.IsMatch(method.ReturnType))
+                    throw new GenerationException($"The return type name of the method \"{method.Name}\", from the class " +
+                        $"\"{classModel.Name}\", is not valid!");
+
+                if (method.Parameters == null)
+                    continue;
+
+                foreach(var parameter in method.Parameters)
+                {
+                    if (!namingPatternRegex.IsMatch(parameter.Name))
+                        throw new GenerationException($"The name of the parameter \"{parameter.Name}\", from the class " +
+                            $"\"{classModel.Name}\", method \"{method.Name}\", is not valid!");
+
+                    if (!namingPatternRegex.IsMatch(parameter.Type))
+                        throw new GenerationException($"The type name of the parameter \"{parameter.Name}\", from the class " +
+                            $"\"{classModel.Name}\", method \"{method.Name}\", is not valid!");
+                }
+            }
+
         }
     }
 }
