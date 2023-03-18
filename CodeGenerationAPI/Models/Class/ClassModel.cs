@@ -14,6 +14,6 @@ namespace CodeGenerationAPI.Models.Class
         public List<string>? InheritedClassesNames { get; set; }        // List of the names of the directly inherited classes
         public List<string>? ImplementedInterfacesNames { get; set; }   // List of the names of the directly implemented interfaces
         public List<MethodModel>? OverriddenMethods { get; set; }       // List of methods coming from inherited classes/implemented interfaces
-        public string FullPackagePath { get; set; } = string.Empty;     // The full path containing the names of all the nested packages above this class
+        public string? FullPackagePath { get; set; }     // The full path containing the names of all the nested packages above this class
     }
 }

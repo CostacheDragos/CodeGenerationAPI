@@ -43,3 +43,10 @@ public interface $InterfaceName$ $if(InheritedInterfacesNames)$:$endif$ $Inherit
     }; separator="\n"$
 }
 >>
+
+namespace(FullPackagePath, ClassCode) ::= <<
+namespace $FullPackagePath$
+{
+    $ClassCode$
+}
+>>

@@ -1,4 +1,6 @@
-class(ClassName, Properties, Methods, OverriddenMethods, InheritedClassesNames, ImplementedInterfacesNames) ::= <<
+class(ClassName, Properties, Methods, OverriddenMethods, InheritedClassesNames, ImplementedInterfacesNames, FullPackagePath) ::= <<
+$if(FullPackagePath)$package $FullPackagePath$
+$endif$
 public class $ClassName$$if(InheritedClassesNames)$ extends$endif$ $InheritedClassesNames : {name | $name$}; separator=", "$$
                          if(ImplementedInterfacesNames)$ implements$endif$ $ImplementedInterfacesNames : {name | $name$}; separator=", "$ {
     // Generated Properties
@@ -23,7 +25,9 @@ public class $ClassName$$if(InheritedClassesNames)$ extends$endif$ $InheritedCla
 }
 >>
 
-interface(InterfaceName, Properties, PrivateMethods, PublicMethods, InheritedInterfacesNames) ::= <<
+interface(InterfaceName, Properties, PrivateMethods, PublicMethods, InheritedInterfacesNames, FullPackagePath) ::= <<
+$if(FullPackagePath)$package $FullPackagePath$
+$endif$
 public interface $InterfaceName$ $if(InheritedInterfacesNames)$extends$endif$ $InheritedInterfacesNames : {name | $name$}; separator=", "$ {
     // Generated Properties
     $Properties : {property | $property.type$ $property.name$;}; separator="\n"$

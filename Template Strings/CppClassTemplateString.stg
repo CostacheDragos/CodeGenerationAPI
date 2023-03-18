@@ -32,7 +32,8 @@ public:
 >>
 
 
-interface(ClassName, Properties, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, InheritedClassesNames, ImplementedInterfacesNames) ::= <<
+interface(ClassName, Properties, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, 
+InheritedClassesNames, ImplementedInterfacesNames) ::= <<
 class $ClassName$ $if(InheritedClassesNames || ImplementedInterfacesNames)$:$endif$ $
                     InheritedClassesNames : {name | public $name$}; separator=", "$$
                    if(InheritedClassesNames && ImplementedInterfacesNames)$, $endif$$
@@ -58,5 +59,12 @@ public:
     $Properties : {property | $
             if(property.generateGetter)$virtual $property.type$ Get$property.name; format="cap"$(){ return this.$property.name$; \}$\n$$endif$
             }$
+}
+>>
+
+namespace(FullPackagePath, ClassCode) ::= <<
+namespace $FullPackagePath$
+{
+    $ClassCode$
 }
 >>

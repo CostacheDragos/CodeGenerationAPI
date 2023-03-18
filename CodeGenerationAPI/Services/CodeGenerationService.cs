@@ -44,6 +44,16 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
                 classTemplate.Add("ImplementedInterfacesNames", classModel.ImplementedInterfacesNames);
 
+                if(classModel.FullPackagePath != null)
+                {
+                    // If the class in contained in a package, use the namespace template to wrap it
+                    var namespaceTemplate = templateGroup.GetInstanceOf("namespace");
+                    namespaceTemplate.Add("FullPackagePath", classModel.FullPackagePath);
+                    namespaceTemplate.Add("ClassCode", classTemplate.Render());
+
+                    return namespaceTemplate.Render();
+                }
+
                 return classTemplate.Render();
             }
             catch(Exception ex)
@@ -62,17 +72,27 @@ namespace CodeGenerationAPI.Services
             {
                 string classTemplateString = File.ReadAllText(m_stringTemplatesPathsConfig.CSharpClass);
                 var templateGroup = new TemplateGroupString("class-template", classTemplateString, '$', '$');
-                var classTemplate = templateGroup.GetInstanceOf("interface");
+                var interfaceTemplate = templateGroup.GetInstanceOf("interface");
 
-                classTemplate.Add("InterfaceName", interfaceModel.Name);
-                classTemplate.Add("Properties", interfaceModel.Properties);
+                interfaceTemplate.Add("InterfaceName", interfaceModel.Name);
+                interfaceTemplate.Add("Properties", interfaceModel.Properties);
                 
-                classTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
-                classTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
+                interfaceTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
+                interfaceTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
                 
-                classTemplate.Add("InheritedInterfacesNames", interfaceModel.ImplementedInterfacesNames);
+                interfaceTemplate.Add("InheritedInterfacesNames", interfaceModel.ImplementedInterfacesNames);
 
-                return classTemplate.Render();
+                if (interfaceModel.FullPackagePath != null)
+                {
+                    // If the class in contained in a package, use the namespace template to wrap it
+                    var namespaceTemplate = templateGroup.GetInstanceOf("namespace");
+                    namespaceTemplate.Add("FullPackagePath", interfaceModel.FullPackagePath);
+                    namespaceTemplate.Add("ClassCode", interfaceTemplate.Render());
+
+                    return namespaceTemplate.Render();
+                }
+
+                return interfaceTemplate.Render();
             }
             catch (Exception ex)
             {
@@ -107,6 +127,16 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
                 classTemplate.Add("ImplementedInterfacesNames", classModel.ImplementedInterfacesNames);
 
+                if (classModel.FullPackagePath != null)
+                {
+                    // If the class in contained in a package, use the namespace template to wrap it
+                    var namespaceTemplate = templateGroup.GetInstanceOf("namespace");
+                    namespaceTemplate.Add("FullPackagePath", classModel.FullPackagePath);
+                    namespaceTemplate.Add("ClassCode", classTemplate.Render());
+
+                    return namespaceTemplate.Render();
+                }
+
                 return classTemplate.Render();
             }
             catch (Exception ex)
@@ -125,22 +155,32 @@ namespace CodeGenerationAPI.Services
                 var templateGroup = new TemplateGroupString("class-template", classTemplateString, '$', '$');
                 templateGroup.RegisterRenderer(typeof(String), new StringRenderer());
 
-                var classTemplate = templateGroup.GetInstanceOf("interface");
-                classTemplate.Add("ClassName", interfaceModel.Name);
+                var interfaceTemplate = templateGroup.GetInstanceOf("interface");
+                interfaceTemplate.Add("ClassName", interfaceModel.Name);
 
-                classTemplate.Add("Properties", interfaceModel.Properties);
-                classTemplate.Add("PublicProperties",
+                interfaceTemplate.Add("Properties", interfaceModel.Properties);
+                interfaceTemplate.Add("PublicProperties",
                     interfaceModel.Properties.Where(prop => prop.AccessModifier == "public"));
-                classTemplate.Add("PrivateProperties",
+                interfaceTemplate.Add("PrivateProperties",
                     interfaceModel.Properties.Where(prop => prop.AccessModifier == "private"));
 
-                classTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
-                classTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
+                interfaceTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
+                interfaceTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
 
-                classTemplate.Add("InheritedClassesNames", interfaceModel.InheritedClassesNames);
-                classTemplate.Add("ImplementedInterfacesNames", interfaceModel.ImplementedInterfacesNames);
+                interfaceTemplate.Add("InheritedClassesNames", interfaceModel.InheritedClassesNames);
+                interfaceTemplate.Add("ImplementedInterfacesNames", interfaceModel.ImplementedInterfacesNames);
 
-                return classTemplate.Render();
+                if (interfaceModel.FullPackagePath != null)
+                {
+                    // If the class in contained in a package, use the namespace template to wrap it
+                    var namespaceTemplate = templateGroup.GetInstanceOf("namespace");
+                    namespaceTemplate.Add("FullPackagePath", interfaceModel.FullPackagePath);
+                    namespaceTemplate.Add("ClassCode", interfaceTemplate.Render());
+
+                    return namespaceTemplate.Render();
+                }
+
+                return interfaceTemplate.Render();
             }
             catch (Exception ex)
             {
@@ -170,6 +210,8 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
                 classTemplate.Add("ImplementedInterfacesNames", classModel.ImplementedInterfacesNames);
 
+                classTemplate.Add("FullPackagePath", classModel.FullPackagePath);
+
                 return classTemplate.Render();
             }
             catch (Exception ex)
@@ -189,17 +231,19 @@ namespace CodeGenerationAPI.Services
                 var templateGroup = new TemplateGroupString("class-template", classTemplateString, '$', '$');
                 templateGroup.RegisterRenderer(typeof(String), new StringRenderer());
 
-                var classTemplate = templateGroup.GetInstanceOf("interface");
+                var interfaceTemplate = templateGroup.GetInstanceOf("interface");
                 
-                classTemplate.Add("InterfaceName", interfaceModel.Name);
-                classTemplate.Add("Properties", interfaceModel.Properties);
+                interfaceTemplate.Add("InterfaceName", interfaceModel.Name);
+                interfaceTemplate.Add("Properties", interfaceModel.Properties);
 
-                classTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
-                classTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
+                interfaceTemplate.Add("PrivateMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "private"));
+                interfaceTemplate.Add("PublicMethods", interfaceModel.Methods.Where(met => met.AccessModifier == "public"));
                 
-                classTemplate.Add("InheritedInterfacesNames", interfaceModel.ImplementedInterfacesNames);
+                interfaceTemplate.Add("InheritedInterfacesNames", interfaceModel.ImplementedInterfacesNames);
 
-                return classTemplate.Render();
+                interfaceTemplate.Add("FullPackagePath", interfaceModel.FullPackagePath);
+
+                return interfaceTemplate.Render();
             }
             catch (Exception ex)
             {
@@ -277,7 +321,7 @@ namespace CodeGenerationAPI.Services
         private void ResolvePackaging(Dictionary<string, ClassNodeModel> classNodes, 
             Dictionary<string, PackageNodeModel> packageNodes, string language)
         {
-            string separator = language == nameof(Languages.Cpp) ? ":" : ".";
+            string separator = language == nameof(Languages.Cpp) ? "::" : ".";
 
             // We perform a BFS pass trough the package nodes, using as roots
             // only the package nodes that don't have a parent package
@@ -312,13 +356,9 @@ namespace CodeGenerationAPI.Services
                         // If the child node is not a package, it is a class
                         classNodes.TryGetValue(childNodeId, out ClassNodeModel? classNodeChild);
                         if (classNodeChild != null)
-                        {
-                            classNodeChild.ClassData.FullPackagePath =
-                                currentPackageNode.PackageData.FullPackagePath + separator + classNodeChild.ClassData.Name;
-                        }
+                            classNodeChild.ClassData.FullPackagePath = currentPackageNode.PackageData.FullPackagePath;
                     }
             }
-
         }
 
 
