@@ -1,4 +1,5 @@
 ﻿using CodeGenerationAPI.Models.Class;
+using CodeGenerationAPI.Models.Package;
 
 namespace CodeGenerationAPI.Services
 {
@@ -13,6 +14,8 @@ namespace CodeGenerationAPI.Services
         public string GenerateJavaClassCode(ClassModel classModel);
         public string GenerateJavaInterfaceCode(ClassModel interfaceModel);
 
-        public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodeModels, string language);
+        public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodeModels,
+            List<PackageNodeModel> packageNodeModels,
+            string language);
     }
 }

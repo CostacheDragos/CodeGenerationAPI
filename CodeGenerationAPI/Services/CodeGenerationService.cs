@@ -1,6 +1,7 @@
 ﻿using Antlr4.StringTemplate;
 using CodeGenerationAPI.Config;
 using CodeGenerationAPI.Models.Class;
+using CodeGenerationAPI.Models.Package;
 using CodeGenerationAPI.Utility;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -211,13 +212,9 @@ namespace CodeGenerationAPI.Services
         // Generates code for an entire class hierarchy
         // Returns a dictionary in which the keys are the node ids
         // and the value is the generated code
-        public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodes, string language)
+        public Dictionary<string, string>? GenerateCode(List<ClassNodeModel> classNodes, List<PackageNodeModel> packageNodes, string language)
         {
-            // Check the naming validity of the provided data
-            foreach (var classNode in classNodes)
-                CheckNamingValidity(classNode.ClassData);
-            
-            ResolveInheritance(classNodes, language);
+            PreProccessCodeGenerationNodes(classNodes, packageNodes, language);
 
             var result = new Dictionary<string, string>();
             foreach (var classNode in classNodes)
@@ -248,27 +245,97 @@ namespace CodeGenerationAPI.Services
             return result;
         }
 
-        // Based on the data in the received Class nodes, we update the data 
-        // in each node's class data to contain their inherited fields and methods
-        // as well as have a list of direct parent classes
-        private void ResolveInheritance(List<ClassNodeModel> classNodes, string language)
+        // Will perform validity checks on the received code generation and
+        // resolve inheritance and nesting links between the received nodes
+        // Throws a code generation exception if problems are encountered in the data
+        private void PreProccessCodeGenerationNodes(List<ClassNodeModel> classNodes, List<PackageNodeModel> packageNodes, string language)
         {
+            // Check the naming validity of the provided data
+            foreach (var classNode in classNodes)
+                CheckNamingValidity(classNode.ClassData);
+
             // In order to establish the connections quicker we use a dictionary
             // that uses the node ids as keys, this way each time we establish an
             // inheritance we can access the data in O(1)
-            Dictionary<string, ClassNodeModel> classes = new();
-            foreach(var classNode in classNodes)
-                classes.Add(classNode.Id, classNode);
+            Dictionary<string, ClassNodeModel> classNodesDictionary = new();
+            Dictionary<string, PackageNodeModel> packageNodesDictionary = new();
 
-            // Iterate trough the node list once more and populate the necessary class data
             foreach (var classNode in classNodes)
+                classNodesDictionary.Add(classNode.Id, classNode);
+            
+            ResolveInheritance(classNodesDictionary, language);
+
+
+            
+            foreach (var packageNode in packageNodes)
+                packageNodesDictionary.Add(packageNode.Id, packageNode);
+
+            ResolvePackaging(classNodesDictionary, packageNodesDictionary, language);
+        }
+
+        // Fills the full package path in class data and package data
+        private void ResolvePackaging(Dictionary<string, ClassNodeModel> classNodes, 
+            Dictionary<string, PackageNodeModel> packageNodes, string language)
+        {
+            string separator = language == nameof(Languages.Cpp) ? ":" : ".";
+
+            // We perform a BFS pass trough the package nodes, using as roots
+            // only the package nodes that don't have a parent package
+            // In this pass we fill the full package path on the nodes
+            Queue<string> packageNodesIdsQueue = new();
+            foreach(var rootPackageNode in packageNodes.Values.Where(packageNode => packageNode.ParentPackageId.Equals(string.Empty)))
+            {
+                // Fill the path of the root packages and then add them to the initial queue
+                rootPackageNode.PackageData.FullPackagePath = rootPackageNode.PackageData.Name;
+                packageNodesIdsQueue.Enqueue(rootPackageNode.Id);
+            }
+
+            while(packageNodesIdsQueue.Count > 0)
+            {
+                var currentPackageNode = packageNodes[packageNodesIdsQueue.Dequeue()];
+                // Fill the paths of the child nodes
+                if(currentPackageNode.PackageData.ChildrenIds != null)
+                    foreach(var childNodeId in currentPackageNode.PackageData.ChildrenIds)
+                    {
+                        // Check if the current child is a package
+                        packageNodes.TryGetValue(childNodeId, out PackageNodeModel? packageNodeChild);
+                        if(packageNodeChild != null)
+                        {
+                            // If the current child is a package, fill the full path and add it to the queue
+                            packageNodeChild.PackageData.FullPackagePath = 
+                                currentPackageNode.PackageData.FullPackagePath + separator + packageNodeChild.PackageData.Name;
+                            packageNodesIdsQueue.Enqueue(childNodeId);
+
+                            continue;
+                        }
+
+                        // If the child node is not a package, it is a class
+                        classNodes.TryGetValue(childNodeId, out ClassNodeModel? classNodeChild);
+                        if (classNodeChild != null)
+                        {
+                            classNodeChild.ClassData.FullPackagePath =
+                                currentPackageNode.PackageData.FullPackagePath + separator + classNodeChild.ClassData.Name;
+                        }
+                    }
+            }
+
+        }
+
+
+        // Based on the data in the received Class nodes, we update the data 
+        // in each node's class data to contain their inherited fields and methods
+        // as well as have a list of direct parent classes
+        private void ResolveInheritance(Dictionary<string, ClassNodeModel> classNodes, string language)
+        {
+            // Iterate trough the node list once more and populate the necessary class data
+            foreach (var classNode in classNodes.Values)
                 if (classNode.ParentClassNodesIds != null)
                 {
                     uint numberOfInheritedClasses = 0;
                     foreach (var parentClassId in classNode.ParentClassNodesIds)
                         // Add the names of the inherited classes and implemented interfaces to the class data
                         // so that they can be represented in the string template
-                        if (!classes[parentClassId].isInterface)
+                        if (!classNodes[parentClassId].isInterface)
                         {
                             numberOfInheritedClasses++;
 
@@ -277,21 +344,21 @@ namespace CodeGenerationAPI.Services
 
                             if (classNode.ClassData.InheritedClassesNames == null)
                                 classNode.ClassData.InheritedClassesNames = new();
-                            classNode.ClassData.InheritedClassesNames.Add(classes[parentClassId].ClassData.Name);
+                            classNode.ClassData.InheritedClassesNames.Add(classNodes[parentClassId].ClassData.Name);
                         }
                         else
                         {
                             if (classNode.ClassData.ImplementedInterfacesNames == null)
                                 classNode.ClassData.ImplementedInterfacesNames = new();
-                            classNode.ClassData.ImplementedInterfacesNames.Add(classes[parentClassId].ClassData.Name);
+                            classNode.ClassData.ImplementedInterfacesNames.Add(classNodes[parentClassId].ClassData.Name);
                         }
                 }
 
             // After finishing the check that all inheritances and implementations
             // are valid, add the overridden methods to classes that implement interfaces
-            foreach (var classNode in classNodes)
+            foreach (var classNode in classNodes.Values)
                 if (!classNode.isInterface && classNode.ClassData.ImplementedInterfacesNames != null)
-                    AddOverriddenMethodsAndProps(classNode, classes, language);
+                    AddOverriddenMethodsAndProps(classNode, classNodes, language);
         }
         // Adds methods from ancestor interfaces into the implementation class
         private void AddOverriddenMethodsAndProps(ClassNodeModel implementingClass, Dictionary<string, ClassNodeModel> classNodesCollection, string language)

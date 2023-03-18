@@ -4,5 +4,6 @@
     {
         public string Name { get; set; } = string.Empty;
         public List<string>? ChildrenIds { get; set; }
+        public string FullPackagePath { get; set; } = string.Empty;
     }
 }

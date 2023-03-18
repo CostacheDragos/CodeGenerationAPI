@@ -8,11 +8,12 @@ namespace CodeGenerationAPI.Models.Class
 {
     public class ClassModel
     {
-        public string Name { get; set; } = string.Empty;
-        public List<PropertyModel> Properties { get; set; } = new();
-        public List<MethodModel> Methods { get; set; } = new();
-        public List<string>? InheritedClassesNames { get; set; }
-        public List<string>? ImplementedInterfacesNames { get; set; }
-        public List<MethodModel>? OverriddenMethods { get; set; }
+        public string Name { get; set; } = string.Empty;                // Name of the class
+        public List<PropertyModel> Properties { get; set; } = new();    // List of member properties
+        public List<MethodModel> Methods { get; set; } = new();         // List of member methods
+        public List<string>? InheritedClassesNames { get; set; }        // List of the names of the directly inherited classes
+        public List<string>? ImplementedInterfacesNames { get; set; }   // List of the names of the directly implemented interfaces
+        public List<MethodModel>? OverriddenMethods { get; set; }       // List of methods coming from inherited classes/implemented interfaces
+        public string FullPackagePath { get; set; } = string.Empty;     // The full path containing the names of all the nested packages above this class
     }
 }

@@ -25,7 +25,9 @@ namespace CodeGenerationAPI.Controllers
             try
             {
                 var generated = m_codeGeneratorService.GenerateCode(
-                    codeGenerationRequestDataModel.ClassNodes, codeGenerationRequestDataModel.Language);
+                    codeGenerationRequestDataModel.ClassNodes, 
+                    codeGenerationRequestDataModel.PackageNodes,
+                    codeGenerationRequestDataModel.Language);
 
                 if (generated == null)
                     return StatusCode(StatusCodes.Status500InternalServerError);
