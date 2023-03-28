@@ -10,8 +10,7 @@ private:
         endif
     $$
     
-    PrivateMethods : {method | $\t$$method.returnType$ $method.name$($
-        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$
+    PrivateMethods : {methodData | $\t$$method(methodData)$}; separator="\n"$
 
 // Generated Protected Members
 protected:
@@ -20,8 +19,7 @@ protected:
         endif
     $$
     
-    ProtectedMethods : {method | $\t$$method.returnType$ $method.name$($
-        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$
+    ProtectedMethods : {methodData | $\t$$method(methodData)$}; separator="\n"$
 
 // Generated Public Members
 public:
@@ -30,8 +28,7 @@ public:
         endif
     $$
     
-    PublicMethods : {method | $\t$$method.returnType$ $method.name$($
-        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$$
+    PublicMethods : {methodData | $\t$$method(methodData)$}; separator="\n"$$
         if(PublicMethods)$$\n$$
         endif
     $
@@ -45,6 +42,10 @@ public:
 }
 >>
 
+method(methodData) ::= <<
+$if(methodData.IsVirtual)$virtual $endif$$methodData.returnType$ $methodData.name$($
+        methodData.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);
+>>
 
 namespace(FullPackagePath, ClassCode) ::= <<
 namespace $FullPackagePath$

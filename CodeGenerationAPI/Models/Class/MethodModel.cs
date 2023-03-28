@@ -12,5 +12,6 @@ namespace CodeGenerationAPI.Models.Class
         public string AccessModifier { get; set; } = string.Empty;
         public string ReturnType { get; set; } = string.Empty;
         public List<PropertyModel>? Parameters { get; set; }
+        public bool IsVirtual { get; set; } = false;
     }
 }
