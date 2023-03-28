@@ -34,13 +34,14 @@ namespace CodeGenerationAPI.Services
                     classModel.Properties.Where(prop => prop.AccessModifier == "public"));
                 classTemplate.Add("PrivateProperties",
                     classModel.Properties.Where(prop => prop.AccessModifier == "private"));
+                classTemplate.Add("ProtectedProperties",
+                    classModel.Properties.Where(prop => prop.AccessModifier == "protected"));
 
                 classTemplate.Add("PublicMethods", classModel.Methods.Where(met => met.AccessModifier == "public"));
                 classTemplate.Add("PrivateMethods", classModel.Methods.Where(met => met.AccessModifier == "private"));
-                classTemplate.Add("OverriddenMethods", classModel.OverriddenMethods);
+                classTemplate.Add("ProtectedMethods", classModel.Methods.Where(met => met.AccessModifier == "protected"));
 
                 classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
-                classTemplate.Add("ImplementedInterfacesNames", classModel.ImplementedInterfacesNames);
 
                 if (classModel.FullPackagePath != null)
                 {

@@ -1,9 +1,7 @@
-class(ClassName, Properties, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, OverriddenMethods,
- InheritedClassesNames, ImplementedInterfacesNames) ::= <<
-class $ClassName$ $if(InheritedClassesNames || ImplementedInterfacesNames)$:$endif$ $
-                    InheritedClassesNames : {name | public $name$}; separator=", "$$
-                   if(InheritedClassesNames && ImplementedInterfacesNames)$, $endif$$
-                    ImplementedInterfacesNames : {name | public $name$}; separator=", "$
+class(ClassName, Properties, PublicProperties, PrivateProperties, ProtectedProperties, 
+    PublicMethods, PrivateMethods, ProtectedMethods, InheritedClassesNames) ::= <<
+class $ClassName$ $if(InheritedClassesNames)$:$endif$ $
+                    InheritedClassesNames : {name | public $name$}; separator=", "$
 {
 // Generated Private Members
 private:
@@ -14,6 +12,17 @@ private:
     
     PrivateMethods : {method | $\t$$method.returnType$ $method.name$($
         method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$
+
+// Generated Protected Members
+protected:
+    $ProtectedProperties : {property | $property.type$ $property.name$;}; separator="\n"$$
+        if(ProtectedProperties)$$\n$$
+        endif
+    $$
+    
+    ProtectedMethods : {method | $\t$$method.returnType$ $method.name$($
+        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$
+
 // Generated Public Members
 public:
     $PublicProperties : {property | $property.type$ $property.name$;}; separator="\n"$$
@@ -25,14 +34,8 @@ public:
         method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$$
         if(PublicMethods)$$\n$$
         endif
-    $$
-    
-    OverriddenMethods : {method | $\t$$method.returnType$ $method.name$($
-        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$) override;}; separator="\n"$$
-        if(PublicProperties || PublicMethods || OverriddenMethods)$$\n$$\t$// Setters & Getters$\n$$
-        else$$\t$// Setters & Getter$\n$$
-        endif
-    $$
+    $
+    $\n$$\t$// Setters & Getters$\n$$
     Properties : {property | $
             if(property.generateSetter)$$\t$void Set$property.name; format="cap"$($property.type$ newValue){ this.$property.name$ = newValue; \}$\n$$endif$
             }$$
@@ -42,36 +45,6 @@ public:
 }
 >>
 
-
-interface(ClassName, Properties, PublicProperties, PrivateProperties, PublicMethods, PrivateMethods, 
-InheritedClassesNames, ImplementedInterfacesNames) ::= <<
-class $ClassName$ $if(InheritedClassesNames || ImplementedInterfacesNames)$:$endif$ $
-                    InheritedClassesNames : {name | public $name$}; separator=", "$$
-                   if(InheritedClassesNames && ImplementedInterfacesNames)$, $endif$$
-                    ImplementedInterfacesNames : {name | public $name$}; separator=", "$
-{
-// Generated Private Members
-private:
-    $PrivateProperties : {property | $property.type$ $property.name$;}; separator="\n"$
-    
-    $PrivateMethods : {method | virtual $method.returnType$ $method.name$($
-        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$) = 0;}; separator="\n"$
-// Generated Public Members
-public:
-    $PublicProperties : {property | $property.type$ $property.name$;}; separator="\n"$
-
-    $PublicMethods : {method | virtual $method.returnType$ $method.name$($
-        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$) = 0;}; separator="\n"$
-
-    // Setters & Getters
-    $Properties : {property | $
-            if(property.generateSetter)$virtual void Set$property.name; format="cap"$($property.type$ newValue){ this.$property.name$ = newValue; \}$\n$$endif$
-            }$
-    $Properties : {property | $
-            if(property.generateGetter)$virtual $property.type$ Get$property.name; format="cap"$(){ return this.$property.name$; \}$\n$$endif$
-            }$
-}
->>
 
 namespace(FullPackagePath, ClassCode) ::= <<
 namespace $FullPackagePath$
