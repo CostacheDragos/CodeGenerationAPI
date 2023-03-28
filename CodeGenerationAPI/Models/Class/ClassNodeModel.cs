@@ -11,7 +11,5 @@ namespace CodeGenerationAPI.Models.Class
         public List<string>? ParentClassNodesIds { get; set; }
         
         public ClassModel ClassData { get; set; } = new();
-
-        public bool isInterface { get; set; } = false;
     }
 }

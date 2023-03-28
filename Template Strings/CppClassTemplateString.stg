@@ -7,26 +7,37 @@ class $ClassName$ $if(InheritedClassesNames || ImplementedInterfacesNames)$:$end
 {
 // Generated Private Members
 private:
-    $PrivateProperties : {property | $property.type$ $property.name$;}; separator="\n"$
+    $PrivateProperties : {property | $property.type$ $property.name$;}; separator="\n"$$
+        if(PrivateProperties)$$\n$$
+        endif
+    $$
     
-    $PrivateMethods : {method | $method.returnType$ $method.name$($
+    PrivateMethods : {method | $\t$$method.returnType$ $method.name$($
         method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$
 // Generated Public Members
 public:
-    $PublicProperties : {property | $property.type$ $property.name$;}; separator="\n"$
-
-    $PublicMethods : {method | $method.returnType$ $method.name$($
-        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$
-
-    $OverriddenMethods : {method | $method.returnType$ $method.name$($
-        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$) override;}; separator="\n"$
-
-    // Setters & Getters
-    $Properties : {property | $
-            if(property.generateSetter)$void Set$property.name; format="cap"$($property.type$ newValue){ this.$property.name$ = newValue; \}$\n$$endif$
-            }$
-    $Properties : {property | $
-            if(property.generateGetter)$$property.type$ Get$property.name; format="cap"$(){ return this.$property.name$; \}$\n$$endif$
+    $PublicProperties : {property | $property.type$ $property.name$;}; separator="\n"$$
+        if(PublicProperties)$$\n$$
+        endif
+    $$
+    
+    PublicMethods : {method | $\t$$method.returnType$ $method.name$($
+        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);}; separator="\n"$$
+        if(PublicMethods)$$\n$$
+        endif
+    $$
+    
+    OverriddenMethods : {method | $\t$$method.returnType$ $method.name$($
+        method.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$) override;}; separator="\n"$$
+        if(PublicProperties || PublicMethods || OverriddenMethods)$$\n$$\t$// Setters & Getters$\n$$
+        else$$\t$// Setters & Getter$\n$$
+        endif
+    $$
+    Properties : {property | $
+            if(property.generateSetter)$$\t$void Set$property.name; format="cap"$($property.type$ newValue){ this.$property.name$ = newValue; \}$\n$$endif$
+            }$$
+    Properties : {property | $
+            if(property.generateGetter)$$\t$$property.type$ Get$property.name; format="cap"$(){ return this.$property.name$; \}$\n$$endif$
             }$
 }
 >>

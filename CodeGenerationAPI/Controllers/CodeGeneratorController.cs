@@ -12,11 +12,11 @@ namespace CodeGenerationAPI.Controllers
     [Route("/api/[controller]")]
     public class CodeGeneratorController : ControllerBase
     {
-        private readonly ICodeGeneratorService m_codeGeneratorService;
+        private readonly ICppCodeGenerationService m_cppCodeGeneratorService;
 
-        public CodeGeneratorController(ICodeGeneratorService codeGeneratorService)
+        public CodeGeneratorController(ICppCodeGenerationService cppCodeGeneratorService)
         {
-            m_codeGeneratorService = codeGeneratorService;
+            m_cppCodeGeneratorService = cppCodeGeneratorService;
         }
 
         [HttpPost]
@@ -24,10 +24,9 @@ namespace CodeGenerationAPI.Controllers
         {
             try
             {
-                var generated = m_codeGeneratorService.GenerateCode(
+                var generated = m_cppCodeGeneratorService.GenerateCode(
                     codeGenerationRequestDataModel.ClassNodes, 
-                    codeGenerationRequestDataModel.PackageNodes,
-                    codeGenerationRequestDataModel.Language);
+                    codeGenerationRequestDataModel.PackageNodes);
 
                 if (generated == null)
                     return StatusCode(StatusCodes.Status500InternalServerError);

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddSingleton<ICodeGeneratorService, CodeGenerationService>();
+builder.Services.AddSingleton<ICppCodeGenerationService, CppCodeGenerationService>();
 builder.Services.AddSingleton<IFirestoreService>(sp =>
 {
     string projectId = builder.Configuration.GetSection("FirebaseProjectId").Value;

@@ -7,6 +7,5 @@ namespace CodeGenerationAPI.Models
     {
         public List<ClassNodeModel> ClassNodes { get; set; } = new();
         public List<PackageNodeModel> PackageNodes { get; set; } = new();
-        public string Language { get; set; } = "CSharp";
     }
 }
