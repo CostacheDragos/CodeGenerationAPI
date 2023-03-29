@@ -41,7 +41,7 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("PrivateMethods", classModel.Methods.Where(met => met.AccessModifier == "private"));
                 classTemplate.Add("ProtectedMethods", classModel.Methods.Where(met => met.AccessModifier == "protected"));
 
-                classTemplate.Add("InheritedClassesNames", classModel.InheritedClassesNames);
+                classTemplate.Add("InheritedClasses", classModel.InheritedClasses);
 
                 if (classModel.FullPackagePath != null)
                 {
@@ -164,15 +164,19 @@ namespace CodeGenerationAPI.Services
         {
             // Iterate trough the node list once more and populate the necessary class data
             foreach (var classNode in classNodes.Values)
-                if (classNode.ParentClassNodesIds != null)
+                if (classNode.ParentClassNodes != null)
                 {
-                    foreach (var parentClassId in classNode.ParentClassNodesIds)
+                    foreach (var parentClass in classNode.ParentClassNodes)
                         {
                             // Add the names of the inherited classes and implemented interfaces to the class data
                             // so that they can be represented in the string template
-                            if (classNode.ClassData.InheritedClassesNames == null)
-                                classNode.ClassData.InheritedClassesNames = new();
-                            classNode.ClassData.InheritedClassesNames.Add(classNodes[parentClassId].ClassData.Name);
+                            if (classNode.ClassData.InheritedClasses == null)
+                                classNode.ClassData.InheritedClasses = new();
+                            classNode.ClassData.InheritedClasses.Add(new()
+                            {
+                                Name = classNodes[parentClass.Id].ClassData.Name,
+                                AccessSpecifier = parentClass.AccessSpecifier,
+                            });
                         }
                 }
         }

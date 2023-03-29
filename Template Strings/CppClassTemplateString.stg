@@ -1,7 +1,7 @@
 class(ClassName, Properties, PublicProperties, PrivateProperties, ProtectedProperties, 
-    PublicMethods, PrivateMethods, ProtectedMethods, InheritedClassesNames) ::= <<
-class $ClassName$ $if(InheritedClassesNames)$:$endif$ $
-                    InheritedClassesNames : {name | public $name$}; separator=", "$
+    PublicMethods, PrivateMethods, ProtectedMethods, InheritedClasses) ::= <<
+class $ClassName$ $if(InheritedClasses)$:$endif$ $
+                    InheritedClasses : {inheritedClass | $inheritedClass.accessSpecifier$ $inheritedClass.name$}; separator=", "$
 {
 // Generated Private Members
 private:
