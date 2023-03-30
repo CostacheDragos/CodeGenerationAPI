@@ -1,4 +1,4 @@
-class(ClassName, Properties, PublicProperties, PrivateProperties, ProtectedProperties, 
+class(ClassName, Constructors, Properties, PublicProperties, PrivateProperties, ProtectedProperties, 
     PublicMethods, PrivateMethods, ProtectedMethods, InheritedClasses) ::= <<
 class $ClassName$ $if(InheritedClasses)$:$endif$ $
                     InheritedClasses : {inheritedClass | $inheritedClass.accessSpecifier$ $inheritedClass.name$}; separator=", "$
@@ -23,7 +23,12 @@ protected:
 
 // Generated Public Members
 public:
-    $PublicProperties : {property | $property.type$ $property.name$;}; separator="\n"$$
+    $Constructors : {constructorData | $constructor(constructorData, ClassName)$}; separator="\n"$$
+        if(Constructors)$$\n$$
+        endif
+    $$
+    
+    PublicProperties : {property | $\t$$property.type$ $property.name$;}; separator="\n"$$
         if(PublicProperties)$$\n$$
         endif
     $$
@@ -40,6 +45,12 @@ public:
             if(property.generateGetter)$$\t$$property.type$ Get$property.name; format="cap"$(){ return this.$property.name$; \}$\n$$endif$
             }$
 }
+>>
+
+constructor(constructorData, className) ::= <<
+$className$($constructorData.initializedFields : {field | $field.type$ $field.name$}; separator=", "$)$
+    if(constructorData.initializedFields)$ : $endif$$
+    constructorData.initializedFields : {field | $field.name$ { $field.name$ \}}; separator=", "$ {}
 >>
 
 method(methodData) ::= <<

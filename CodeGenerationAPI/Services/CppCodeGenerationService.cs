@@ -28,6 +28,7 @@ namespace CodeGenerationAPI.Services
 
                 var classTemplate = templateGroup.GetInstanceOf("class");
                 classTemplate.Add("ClassName", classModel.Name);
+                classTemplate.Add("Constructors", classModel.Constructors);
 
                 classTemplate.Add("Properties", classModel.Properties);
                 classTemplate.Add("PublicProperties",
@@ -89,9 +90,12 @@ namespace CodeGenerationAPI.Services
         // Throws a code generation exception if problems are encountered in the data
         private void PreProccessCodeGenerationNodes(List<ClassNodeModel> classNodes, List<PackageNodeModel> packageNodes)
         {
-            // Check the naming validity of the provided data
+            // Check the naming validity and constructors validity
             foreach (var classNode in classNodes)
+            { 
                 CheckNamingValidity(classNode.ClassData);
+                ResolveConstructors(classNode.ClassData);
+            }
 
             // In order to establish the connections quicker we use a dictionary
             // that uses the node ids as keys, this way each time we establish an
@@ -110,6 +114,45 @@ namespace CodeGenerationAPI.Services
                 packageNodesDictionary.Add(packageNode.Id, packageNode);
 
             ResolvePackaging(classNodesDictionary, packageNodesDictionary);
+        }
+
+        // Fills the data regarding class constructors and checks that there are no conflicts between constructors
+        // (no 2 constructors have the same signature)
+        private void ResolveConstructors(ClassModel classModel) 
+        {
+            if (classModel.Constructors == null)
+                return;
+
+            // This dictionary will be used to determine if multiple constructors have the same signature
+            // each element is composed of a signature of a constructor
+            // eg: ClassA(int x, char b) will produce the entry ("int char", constructor_nickname)
+            Dictionary<string, string> constructorsSignatures = new();
+
+            foreach(var constructor in classModel.Constructors)
+            {
+                string signature = "";
+                if(constructor.InitializedFieldsIds != null)
+                {
+                    constructor.InitializedFields = new();
+                    foreach (var fieldID in constructor.InitializedFieldsIds)
+                    {
+                        var field = classModel.Properties.Find(prop => prop.Id == fieldID);
+                        if(field != null)
+                        {
+                            constructor.InitializedFields.Add(field);
+                            signature += $"{field.Type} ";
+                        }
+                    }
+                }
+
+                // If the same signature is found, throw an error
+                if(constructorsSignatures.ContainsKey(signature))
+                    throw new GenerationException($"Constructors '{constructor.Name}' " +
+                        $"and '{constructorsSignatures[signature]}' from class '{classModel.Name}' have the same signature!");
+
+                // If no other constructor with the same signature was found, add this one
+                constructorsSignatures[signature] = constructor.Name;
+            }
         }
 
         // Fills the full package path in class data and package data
