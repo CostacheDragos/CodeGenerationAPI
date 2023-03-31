@@ -55,7 +55,11 @@ $className$($constructorData.initializedFields : {field | $field.type$ $field.na
 
 method(methodData) ::= <<
 $if(methodData.IsVirtual)$virtual $endif$$methodData.returnType$ $methodData.name$($
-        methodData.parameters : {parameter | $parameter.type$ $parameter.name$}; separator=", "$);
+        methodData.parameters : {parameter | $parameter(parameter)$}; separator=", "$);
+>>
+
+parameter(parameterData) ::= <<
+$if(parameterData.IsConst)$const $endif$$parameterData.type$$if(parameterData.IsRef)$&$endif$ $parameterData.name$
 >>
 
 namespace(FullPackagePath, ClassCode) ::= <<
