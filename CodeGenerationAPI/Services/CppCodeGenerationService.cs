@@ -9,6 +9,12 @@ namespace CodeGenerationAPI.Services
 {
     public class CppCodeGenerationService : ICppCodeGenerationService
     {
+        public static readonly HashSet<string> AcceptedDataTypes = new() {
+            "int", "signed int", "unsigned int", "short int", "unsigned short int",
+            "long int", "unsigned long int", "long long int", "unsigned long long int", "long",
+            "float", "double", "long double", "bool",
+            "char", "signed char", "unsigned char", "wchar_t",
+            "std::string" };
 
         private readonly StringTemplatesPathsConfig m_stringTemplatesPathsConfig;
 
@@ -242,7 +248,7 @@ namespace CodeGenerationAPI.Services
                     throw new GenerationException($"The name of the property \"{property.Name}\", from the class " +
                         $"\"{classModel.Name}\", is not valid!");
 
-                if (!namingPatternRegex.IsMatch(property.Type))
+                if (!AcceptedDataTypes.Contains(property.Type) && !namingPatternRegex.IsMatch(property.Type))
                     throw new GenerationException($"The type name of the property \"{property.Name}\", from the class " +
                         $"\"{classModel.Name}\", is not valid!");
             }
@@ -254,7 +260,7 @@ namespace CodeGenerationAPI.Services
                     throw new GenerationException($"The name of the method \"{method.Name}\", from the class " +
                         $"\"{classModel.Name}\", is not valid!");
 
-                if (!namingPatternRegex.IsMatch(method.ReturnType))
+                if (!AcceptedDataTypes.Contains(method.ReturnType) && !namingPatternRegex.IsMatch(method.ReturnType))
                     throw new GenerationException($"The return type name of the method \"{method.Name}\", from the class " +
                         $"\"{classModel.Name}\", is not valid!");
 
@@ -267,7 +273,7 @@ namespace CodeGenerationAPI.Services
                         throw new GenerationException($"The name of the parameter \"{parameter.Name}\", from the class " +
                             $"\"{classModel.Name}\", method \"{method.Name}\", is not valid!");
 
-                    if (!namingPatternRegex.IsMatch(parameter.Type))
+                    if (!AcceptedDataTypes.Contains(parameter.Type) && !namingPatternRegex.IsMatch(parameter.Type))
                         throw new GenerationException($"The type name of the parameter \"{parameter.Name}\", from the class " +
                             $"\"{classModel.Name}\", method \"{method.Name}\", is not valid!");
                 }
