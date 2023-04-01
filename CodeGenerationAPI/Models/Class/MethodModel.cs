@@ -13,5 +13,6 @@ namespace CodeGenerationAPI.Models.Class
         public string ReturnType { get; set; } = string.Empty;
         public List<ParameterModel>? Parameters { get; set; }
         public bool IsVirtual { get; set; } = false;
+        public bool IsStatic { get; set; } = false;
     }
 }

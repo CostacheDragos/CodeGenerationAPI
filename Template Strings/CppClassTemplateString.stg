@@ -54,7 +54,8 @@ $className$($constructorData.initializedFields : {field | $field.type$ $field.na
 >>
 
 method(methodData) ::= <<
-$if(methodData.IsVirtual)$virtual $endif$$methodData.returnType$ $methodData.name$($
+$if(methodData.IsVirtual)$virtual $endif$$
+ if(methodData.IsStatic)$static $endif$$methodData.returnType$ $methodData.name$($
         methodData.parameters : {parameter | $parameter(parameter)$}; separator=", "$);
 >>
 
