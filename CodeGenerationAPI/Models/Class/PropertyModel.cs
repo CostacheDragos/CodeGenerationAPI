@@ -14,5 +14,6 @@ namespace CodeGenerationAPI.Models.Class
         public string Type { get; set; } = string.Empty;
         public bool GenerateSetter { get; set; } = false;
         public bool GenerateGetter { get; set; } = false;
+        public bool IsStatic { get; set; } = false;
     }
 }

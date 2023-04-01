@@ -5,7 +5,7 @@ class $ClassName$ $if(InheritedClasses)$:$endif$ $
 {
 // Generated Private Members
 private:
-    $PrivateProperties : {property | $property.type$ $property.name$;}; separator="\n"$$
+    $PrivateProperties : {property | $property(property)$}; separator="\n"$$
         if(PrivateProperties)$$\n$$
         endif
     $$
@@ -14,7 +14,7 @@ private:
 
 // Generated Protected Members
 protected:
-    $ProtectedProperties : {property | $property.type$ $property.name$;}; separator="\n"$$
+    $ProtectedProperties : {property | $property(property)$}; separator="\n"$$
         if(ProtectedProperties)$$\n$$
         endif
     $$
@@ -28,7 +28,7 @@ public:
         endif
     $$
     
-    PublicProperties : {property | $\t$$property.type$ $property.name$;}; separator="\n"$$
+    PublicProperties : {property | $\t$$property(property)$}; separator="\n"$$
         if(PublicProperties)$$\n$$
         endif
     $$
@@ -39,10 +39,10 @@ public:
     $
     $\n$$\t$// Setters & Getters$\n$$
     Properties : {property | $
-            if(property.generateSetter)$$\t$void Set$property.name; format="cap"$($property.type$ newValue){ this.$property.name$ = newValue; \}$\n$$endif$
+            if(property.generateSetter)$$\t$$setter(property)$$\n$$endif$
             }$$
     Properties : {property | $
-            if(property.generateGetter)$$\t$$property.type$ Get$property.name; format="cap"$(){ return this.$property.name$; \}$\n$$endif$
+            if(property.generateGetter)$$\t$$getter(property)$$\n$$endif$
             }$
 }
 >>
@@ -52,6 +52,28 @@ $className$($constructorData.initializedFields : {field | $field.type$ $field.na
     if(constructorData.initializedFields)$ : $endif$$
     constructorData.initializedFields : {field | $field.name$ { $field.name$ \}}; separator=", "$ {}
 >>
+
+
+property(propertyData) ::= <<
+$if(propertyData.IsStatic)$static inline $endif$$propertyData.type$ $propertyData.name$;
+>>
+
+setter(propertyData) ::= <<
+$if(propertyData.IsStatic)
+	$static void Set$propertyData.name; format="cap"$($propertyData.type$ new$propertyData.name; format="cap"$){ $propertyData.name$ = new$propertyData.name; format="cap"$; \}$
+else
+	$void Set$propertyData.name; format="cap"$($propertyData.type$ newValue){ this.$propertyData.name$ = newValue; \}$
+endif$
+>>
+
+getter(propertyData) ::= <<
+$if(propertyData.IsStatic)
+$static $propertyData.type$ Get$propertyData.name; format="cap"$(){ return $propertyData.name$; \}$
+else
+$$propertyData.type$ Get$propertyData.name; format="cap"$(){ return this.$propertyData.name$; \}$
+endif$
+>>
+
 
 method(methodData) ::= <<
 $if(methodData.IsVirtual)$virtual $endif$$
