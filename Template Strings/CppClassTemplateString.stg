@@ -47,43 +47,50 @@ public:
 }
 >>
 
+dataType(type) ::= <<
+$type.name$$if(type.isPointer)$*$endif$
+>>
+
 constructor(constructorData, className) ::= <<
-$className$($constructorData.initializedFields : {field | $field.type$ $field.name$}; separator=", "$)$
+$className$($constructorData.initializedFields : {field | $dataType(field.type)$ $field.name$}; separator=", "$)$
     if(constructorData.initializedFields)$ : $endif$$
     constructorData.initializedFields : {field | $field.name$ { $field.name$ \}}; separator=", "$ {}
 >>
 
 
 property(propertyData) ::= <<
-$if(propertyData.IsStatic)$static inline $endif$$propertyData.type$ $propertyData.name$;
+$if(propertyData.IsStatic)$static inline $endif$$dataType(propertyData.type)$ $propertyData.name$;
 >>
 
 setter(propertyData) ::= <<
 $if(propertyData.IsStatic)
-	$static void Set$propertyData.name; format="cap"$($propertyData.type$ new$propertyData.name; format="cap"$){ $propertyData.name$ = new$propertyData.name; format="cap"$; \}$
+	$static void Set$propertyData.name; format="cap"$($dataType(propertyData.type)$ new$propertyData.name; format="cap"$){ $propertyData.name$ = new$propertyData.name; format="cap"$; \}$
 else
-	$void Set$propertyData.name; format="cap"$($propertyData.type$ newValue){ this.$propertyData.name$ = newValue; \}$
+	$void Set$propertyData.name; format="cap"$($dataType(propertyData.type)$ newValue){ this.$propertyData.name$ = newValue; \}$
 endif$
 >>
 
 getter(propertyData) ::= <<
 $if(propertyData.IsStatic)
-$static $propertyData.type$ Get$propertyData.name; format="cap"$(){ return $propertyData.name$; \}$
+$static $dataType(propertyData.type)$ Get$propertyData.name; format="cap"$(){ return $propertyData.name$; \}$
 else
-$$propertyData.type$ Get$propertyData.name; format="cap"$(){ return this.$propertyData.name$; \}$
+$$dataType(propertyData.type)$ Get$propertyData.name; format="cap"$(){ return this.$propertyData.name$; \}$
 endif$
 >>
 
 
 method(methodData) ::= <<
 $if(methodData.IsVirtual)$virtual $endif$$
- if(methodData.IsStatic)$static $endif$$methodData.returnType$ $methodData.name$($
+ if(methodData.IsStatic)$static $endif$$dataType(methodData.returnType)$ $methodData.name$($
         methodData.parameters : {parameter | $parameter(parameter)$}; separator=", "$);
 >>
 
 parameter(parameterData) ::= <<
-$if(parameterData.IsConst)$const $endif$$parameterData.type$$if(parameterData.IsRef)$&$endif$ $parameterData.name$
+$if(parameterData.IsConst)$const $endif$$dataType(parameterData.type)$$if(parameterData.IsRef)$&$endif$ $parameterData.name$
 >>
+
+
+
 
 namespace(FullPackagePath, ClassCode) ::= <<
 namespace $FullPackagePath$

@@ -11,7 +11,7 @@ namespace CodeGenerationAPI.Models.Class
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string AccessModifier { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
+        public DataTypeModel Type { get; set; } = new();
         public bool GenerateSetter { get; set; } = false;
         public bool GenerateGetter { get; set; } = false;
         public bool IsStatic { get; set; } = false;
