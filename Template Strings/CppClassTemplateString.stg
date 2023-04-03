@@ -48,7 +48,7 @@ public:
 >>
 
 dataType(type) ::= <<
-$type.name$$if(type.isPointer)$*$endif$
+$if(type.IsConst)$const $endif$$type.name$$type.pointerList : {pointer | $if(pointer.isConst)$*const$else$*$endif$}$
 >>
 
 constructor(constructorData, className) ::= <<
@@ -86,7 +86,7 @@ $if(methodData.IsVirtual)$virtual $endif$$
 >>
 
 parameter(parameterData) ::= <<
-$if(parameterData.type.IsConst)$const $endif$$dataType(parameterData.type)$$if(parameterData.IsRef)$&$endif$ $parameterData.name$
+$dataType(parameterData.type)$$if(parameterData.IsRef)$&$endif$ $parameterData.name$
 >>
 
 
