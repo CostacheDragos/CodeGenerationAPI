@@ -86,7 +86,7 @@ $if(methodData.IsVirtual)$virtual $endif$$
 >>
 
 parameter(parameterData) ::= <<
-$if(parameterData.IsConst)$const $endif$$dataType(parameterData.type)$$if(parameterData.IsRef)$&$endif$ $parameterData.name$
+$if(parameterData.type.IsConst)$const $endif$$dataType(parameterData.type)$$if(parameterData.IsRef)$&$endif$ $parameterData.name$
 >>
 
 
