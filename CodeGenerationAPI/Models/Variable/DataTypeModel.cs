@@ -1,4 +1,4 @@
-﻿namespace CodeGenerationAPI.Models.Class
+﻿namespace CodeGenerationAPI.Models.Variable
 {
     public class DataTypeModel
     {

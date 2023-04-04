@@ -52,29 +52,29 @@ $if(type.IsConst)$const $endif$$type.name$$type.pointerList : {pointer | $if(poi
 >>
 
 constructor(constructorData, className) ::= <<
-$className$($constructorData.initializedFields : {field | $dataType(field.type)$ $field.name$}; separator=", "$)$
+$className$($constructorData.initializedFields : {field | $dataType(field.type)$$if(field.IsArray)$*$endif$ $field.name$}; separator=", "$)$
     if(constructorData.initializedFields)$ : $endif$$
     constructorData.initializedFields : {field | $field.name$ { $field.name$ \}}; separator=", "$ {}
 >>
 
 
 property(propertyData) ::= <<
-$if(propertyData.IsStatic)$static inline $endif$$dataType(propertyData.type)$ $propertyData.name$;
+$if(propertyData.IsStatic)$static inline $endif$$dataType(propertyData.type)$ $propertyData.name$$if(propertyData.IsArray)$[$propertyData.MaxArrayLength$]$endif$;
 >>
 
 setter(propertyData) ::= <<
 $if(propertyData.IsStatic)
-	$static void Set$propertyData.name; format="cap"$($dataType(propertyData.type)$ new$propertyData.name; format="cap"$){ $propertyData.name$ = new$propertyData.name; format="cap"$; \}$
+	$static void Set$propertyData.name; format="cap"$($dataType(propertyData.type)$$if(propertyData.IsArray)$*$endif$ new$propertyData.name; format="cap"$){ $propertyData.name$ = new$propertyData.name; format="cap"$; \}$
 else
-	$void Set$propertyData.name; format="cap"$($dataType(propertyData.type)$ newValue){ this.$propertyData.name$ = newValue; \}$
+	$void Set$propertyData.name; format="cap"$($dataType(propertyData.type)$$if(propertyData.IsArray)$*$endif$ new$propertyData.name; format="cap"$){ this.$propertyData.name$ = new$propertyData.name; format="cap"$; \}$
 endif$
 >>
 
 getter(propertyData) ::= <<
 $if(propertyData.IsStatic)
-$static $dataType(propertyData.type)$ Get$propertyData.name; format="cap"$(){ return $propertyData.name$; \}$
+$static $dataType(propertyData.type)$$if(propertyData.IsArray)$*$endif$ Get$propertyData.name; format="cap"$(){ return $propertyData.name$; \}$
 else
-$$dataType(propertyData.type)$ Get$propertyData.name; format="cap"$(){ return this.$propertyData.name$; \}$
+$$dataType(propertyData.type)$$if(propertyData.IsArray)$*$endif$ Get$propertyData.name; format="cap"$(){ return this.$propertyData.name$; \}$
 endif$
 >>
 
@@ -86,7 +86,9 @@ $if(methodData.IsVirtual)$virtual $endif$$
 >>
 
 parameter(parameterData) ::= <<
-$dataType(parameterData.type)$$if(parameterData.IsRef)$&$endif$ $parameterData.name$
+$dataType(parameterData.type)$$
+    if(propertyData.IsArray)$*$endif$$
+    if(parameterData.IsRef)$&$endif$ $parameterData.name$
 >>
 
 
