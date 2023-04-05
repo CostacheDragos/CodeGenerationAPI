@@ -2,8 +2,11 @@
 using CodeGenerationAPI.Config;
 using CodeGenerationAPI.Models.Class;
 using CodeGenerationAPI.Models.Package;
+using CodeGenerationAPI.Models.Variable;
 using CodeGenerationAPI.Utility;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace CodeGenerationAPI.Services
 {
@@ -101,6 +104,11 @@ namespace CodeGenerationAPI.Services
             { 
                 CheckNamingValidity(classNode.ClassData);
                 ResolveConstructors(classNode.ClassData);
+
+                // ResolvePointerArrayLengths modifies classNode.ClassData.Properties
+                var temp = new List<PropertyModel>(classNode.ClassData.Properties);
+                foreach (var property in temp)
+                    ResolvePointerArrayLengths(property, classNode.ClassData);
             }
 
             // In order to establish the connections quicker we use a dictionary
@@ -121,6 +129,63 @@ namespace CodeGenerationAPI.Services
 
             ResolvePackaging(classNodesDictionary, packageNodesDictionary);
         }
+
+
+        // For fields that are pointers representing arrays, we need to create additional
+        // fields that represent the length of those arrays and have those additional fields
+        // added to constructors where the pointer is present as well as the setter of those pointers
+        private void ResolvePointerArrayLengths(PropertyModel propertyModel, ClassModel classModel)
+        {
+            if (propertyModel.Type.PointerList == null)
+                return;
+
+            List<ConstructorModel> linkedConstructors = new();
+            if (classModel.Constructors != null)
+                linkedConstructors  = classModel.Constructors.Where(con => con.InitializedFieldsIds != null && con.InitializedFieldsIds.Contains(propertyModel.Id)).ToList();
+
+
+            foreach (var pointer in propertyModel.Type.PointerList)
+            {
+                if(pointer.IsArray)
+                {
+                    // Add the additional field to the class field list
+                    classModel.Properties.Add(new()
+                    {
+                        Name = pointer.ArrayLengthFieldName,
+                        Type = new DataTypeModel { Name = "unsigned" },
+                        AccessModifier = propertyModel.AccessModifier,
+                        IsStatic = propertyModel.IsStatic,
+                    });
+
+                    // Add the additional field to the setter of the array (if any will be generated)
+                    if (propertyModel.GenerateSetter)
+                    {
+                        if (propertyModel.SetterModel == null)
+                            propertyModel.SetterModel = new(propertyModel, new());
+
+                        if(propertyModel.SetterModel.AdditionalParameters == null)
+                            propertyModel.SetterModel.AdditionalParameters = new();
+
+                        propertyModel.SetterModel.AdditionalParameters.Add(new()
+                        {
+                            Name = pointer.ArrayLengthFieldName,
+                            Type = new DataTypeModel { Name = "unsigned" },
+                        });
+                    }
+
+                    foreach(var constructor in linkedConstructors)
+                        if(constructor.InitializedFields != null)
+                            constructor.InitializedFields.Add(new()
+                            {
+                                Name = pointer.ArrayLengthFieldName,
+                                Type = new DataTypeModel { Name = "unsigned" },
+                                AccessModifier = propertyModel.AccessModifier,
+                                IsStatic = propertyModel.IsStatic,
+                            });
+                }
+            }
+        }
+
 
         // Fills the data regarding class constructors and checks that there are no conflicts between constructors
         // (no 2 constructors have the same signature)

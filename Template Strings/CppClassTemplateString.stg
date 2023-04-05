@@ -63,11 +63,14 @@ $if(propertyData.IsStatic)$static inline $endif$$dataType(propertyData.type)$ $p
 >>
 
 setter(propertyData) ::= <<
-$if(propertyData.IsStatic)
-	$static void Set$propertyData.name; format="cap"$($dataType(propertyData.type)$$if(propertyData.IsArray)$*$endif$ new$propertyData.name; format="cap"$){ $propertyData.name$ = new$propertyData.name; format="cap"$; \}$
-else
-	$void Set$propertyData.name; format="cap"$($dataType(propertyData.type)$$if(propertyData.IsArray)$*$endif$ new$propertyData.name; format="cap"$){ this.$propertyData.name$ = new$propertyData.name; format="cap"$; \}$
-endif$
+$if(propertyData.IsStatic)$static $endif$void Set$propertyData.name; format="cap"$($
+    dataType(propertyData.type)$$if(propertyData.IsArray)$*$endif$ new$propertyData.name; format="cap"$$
+        if(propertyData.SetterModel.AdditionalParameters)$, $endif$$
+        propertyData.SetterModel.AdditionalParameters: {parameter | $dataType(parameter.type)$ new$parameter.name; format="cap"$}; separator=", "$)
+    { 
+        $propertyData.name$ = new$propertyData.name; format="cap"$;$if(propertyData.SetterModel.AdditionalParameters)$$\n$$endif$$
+        propertyData.SetterModel.AdditionalParameters: {parameter | $\t$$\t$$parameter.name$ = new$parameter.name; format="cap"$;}; separator="\n"$ 
+    \}
 >>
 
 getter(propertyData) ::= <<

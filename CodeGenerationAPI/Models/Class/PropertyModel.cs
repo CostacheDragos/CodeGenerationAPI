@@ -10,7 +10,10 @@ namespace CodeGenerationAPI.Models.Class
     public class PropertyModel : VariableModel
     {
         public string AccessModifier { get; set; } = string.Empty;
+        
         public bool GenerateSetter { get; set; } = false;
+        public SetterModel? SetterModel { get; set; }
+
         public bool GenerateGetter { get; set; } = false;
         public bool IsStatic { get; set; } = false;
     }
