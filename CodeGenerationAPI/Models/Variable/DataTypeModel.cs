@@ -4,7 +4,7 @@
     {
         public string Name { get; set; } = string.Empty;
         public bool IsConst { get; set; } = false;
-        public List<Pointer>? PointerList { get; set; }
+        public List<Pointer> PointerList { get; set; } = new();
 
         public class Pointer
         {

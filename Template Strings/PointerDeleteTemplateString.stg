@@ -1,0 +1,15 @@
+pointerDelete(PointerName, IsArray) ::= <<
+$if(IsArray)$
+delete[] $PointerName$;
+$else$
+delete $PointerName$;
+$endif$
+>>
+
+iterateThenDelete(PointerName, IndexName, LengthVariableName, LoopContents) ::= <<
+for(unsigned $IndexName$ = 0; $IndexName$ < $LengthVariableName$; $IndexName$++)
+{
+    $LoopContents$
+}
+$pointerDelete(PointerName, true)$
+>>

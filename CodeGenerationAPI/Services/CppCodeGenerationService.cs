@@ -26,9 +26,47 @@ namespace CodeGenerationAPI.Services
             m_stringTemplatesPathsConfig = stringTemplatesPathsConfig;
         }
 
+        private string RecursiveDestructorGeneration(string currentVariableName, DataTypeModel dataTypeModel, int currentPointerIdx, TemplateGroup templateGroup)
+        {
+            if (currentPointerIdx == dataTypeModel.PointerList.Count - 1)
+            {
+                var pointerDeleteTemplate = templateGroup.GetInstanceOf("pointerDelete");
+                pointerDeleteTemplate.Add("PointerName", currentVariableName);
+                pointerDeleteTemplate.Add("IsArray", dataTypeModel.PointerList[currentPointerIdx].IsArray);
+                return pointerDeleteTemplate.Render();
+            }
+
+            string? nextVariableName;
+            if (dataTypeModel.PointerList[currentPointerIdx].IsArray)
+            {
+                var idxName = $"{dataTypeModel.PointerList[currentPointerIdx].ArrayLengthFieldName}Idx";
+                nextVariableName = $"{currentVariableName}[{idxName}]";
+
+                var pointerDeleteTemplate = templateGroup.GetInstanceOf("iterateThenDelete");
+                pointerDeleteTemplate.Add("PointerName", currentVariableName);
+                pointerDeleteTemplate.Add("IndexName", idxName);
+                pointerDeleteTemplate.Add("LengthVariableName", dataTypeModel.PointerList[currentPointerIdx].ArrayLengthFieldName);
+                pointerDeleteTemplate.Add("LoopContents",
+                    RecursiveDestructorGeneration(nextVariableName, dataTypeModel, currentPointerIdx + 1, templateGroup));
+
+                return pointerDeleteTemplate.Render();
+            }
+            else
+            {
+                nextVariableName = $"(*{currentVariableName})";
+
+                var pointerDeleteTemplate = templateGroup.GetInstanceOf("pointerDelete");
+                pointerDeleteTemplate.Add("PointerName", currentVariableName);
+                pointerDeleteTemplate.Add("IsArray",false);
+
+                return RecursiveDestructorGeneration(nextVariableName, dataTypeModel, currentPointerIdx + 1, templateGroup) +
+                    pointerDeleteTemplate.Render();
+            }
+        }
+
         // Generates code for a single C++ class
         public string GenerateClassCode(ClassModel classModel)
-        {
+        {   
             try
             {
                 string classTemplateString = File.ReadAllText(m_stringTemplatesPathsConfig.CppClass);
@@ -36,8 +74,12 @@ namespace CodeGenerationAPI.Services
                 templateGroup.RegisterRenderer(typeof(String), new StringRenderer());
 
                 var classTemplate = templateGroup.GetInstanceOf("class");
+
                 classTemplate.Add("ClassName", classModel.Name);
                 classTemplate.Add("Constructors", classModel.Constructors);
+
+                if (classModel.GenerateDestructor)
+                    classTemplate.Add("DestructorContents", GenerateDestructorCode(classModel));
 
                 classTemplate.Add("Properties", classModel.Properties);
                 classTemplate.Add("PublicProperties",
@@ -72,6 +114,23 @@ namespace CodeGenerationAPI.Services
             }
         }
 
+        private string GenerateDestructorCode(ClassModel classModel)
+        {
+            if(classModel.Destructor == null || classModel.Destructor.DeletedFields == null)
+                return string.Empty;
+
+            string pointerDeleteTemplateString = File.ReadAllText(m_stringTemplatesPathsConfig.CppPointerDelete);
+            var templateGroup = new TemplateGroupString("class-template", pointerDeleteTemplateString, '$', '$');
+            templateGroup.RegisterRenderer(typeof(String), new StringRenderer());
+
+            string result = string.Empty;
+            foreach (var field in classModel.Destructor.DeletedFields)
+                result += RecursiveDestructorGeneration(field.Name, field.Type, 0, templateGroup);
+
+            Console.WriteLine(result);
+            return result;
+        }
+
         // Generates code for an entire class hierarchy
         // Returns a dictionary in which the keys are the node ids
         // and the value is the generated code
@@ -104,6 +163,7 @@ namespace CodeGenerationAPI.Services
             { 
                 CheckNamingValidity(classNode.ClassData);
                 ResolveConstructors(classNode.ClassData);
+                ResolveDestructor(classNode.ClassData);
 
                 // ResolvePointerArrayLengths modifies classNode.ClassData.Properties
                 var temp = new List<PropertyModel>(classNode.ClassData.Properties);
@@ -136,7 +196,7 @@ namespace CodeGenerationAPI.Services
         // added to constructors where the pointer is present as well as the setter of those pointers
         private void ResolvePointerArrayLengths(PropertyModel propertyModel, ClassModel classModel)
         {
-            if (propertyModel.Type.PointerList == null)
+            if (propertyModel.Type.PointerList.Count == 0)
                 return;
 
             List<ConstructorModel> linkedConstructors = new();
@@ -225,6 +285,25 @@ namespace CodeGenerationAPI.Services
                 constructorsSignatures[signature] = constructor.Name;
             }
         }
+
+        // Fills the data regarding class destructor
+        private void ResolveDestructor(ClassModel classModel)
+        {
+            if (!classModel.GenerateDestructor || classModel.Destructor == null)
+                return;
+
+            if(classModel.Destructor.DeletedFieldsIds.Count > 0)
+            {
+                classModel.Destructor.DeletedFields = new();
+                foreach (var deletedFieldId in classModel.Destructor.DeletedFieldsIds)
+                {
+                    var deletedField = classModel.Properties.Find(prop => prop.Id == deletedFieldId);
+                    if(deletedField != null)
+                        classModel.Destructor.DeletedFields.Add(deletedField);
+                }
+            }
+        }
+
 
         // Fills the full package path in class data and package data
         private void ResolvePackaging(Dictionary<string, ClassNodeModel> classNodes,

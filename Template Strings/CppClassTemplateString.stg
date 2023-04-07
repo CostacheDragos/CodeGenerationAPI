@@ -1,4 +1,4 @@
-class(ClassName, Constructors, Properties, PublicProperties, PrivateProperties, ProtectedProperties, 
+class(ClassName, Constructors, DestructorContents, Properties, PublicProperties, PrivateProperties, ProtectedProperties, 
     PublicMethods, PrivateMethods, ProtectedMethods, InheritedClasses) ::= <<
 class $ClassName$ $if(InheritedClasses)$:$endif$ $
                     InheritedClasses : {inheritedClass | $inheritedClass.accessSpecifier$ $inheritedClass.name$}; separator=", "$
@@ -27,6 +27,14 @@ public:
         if(Constructors)$$\n$$
         endif
     $$
+
+    if(DestructorContents)
+    $$\t$~$ClassName$()
+    {
+        $DestructorContents$
+    }
+    $endif$$
+    
     
     PublicProperties : {property | $\t$$property(property)$}; separator="\n"$$
         if(PublicProperties)$$\n$$
@@ -93,7 +101,6 @@ $dataType(parameterData.type)$$
     if(propertyData.IsArray)$*$endif$$
     if(parameterData.IsRef)$&$endif$ $parameterData.name$
 >>
-
 
 
 
