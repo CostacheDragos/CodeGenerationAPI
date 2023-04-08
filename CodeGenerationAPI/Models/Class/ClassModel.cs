@@ -18,6 +18,11 @@ namespace CodeGenerationAPI.Models.Class
         public List<PropertyModel> Properties { get; set; } = new();    // List of member properties
         public List<MethodModel> Methods { get; set; } = new();         // List of member methods
         public List<Inheritance>? InheritedClasses { get; set; }        // List of the names of the directly inherited classes
+        
+        public List<string>? FriendClassesIds { get; set; }
+        public List<ClassModel>? FriendClasses { get; set; }
+        
+
         public string? FullPackagePath { get; set; }     // The full path containing the names of all the nested packages above this class
     }
 

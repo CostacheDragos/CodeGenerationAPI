@@ -94,6 +94,7 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("ProtectedMethods", classModel.Methods.Where(met => met.AccessModifier == "protected"));
 
                 classTemplate.Add("InheritedClasses", classModel.InheritedClasses);
+                classTemplate.Add("FriendClasses", classModel.FriendClasses);
 
                 if (classModel.FullPackagePath != null)
                 {
@@ -127,7 +128,6 @@ namespace CodeGenerationAPI.Services
             foreach (var field in classModel.Destructor.DeletedFields)
                 result += RecursiveDestructorGeneration(field.Name, field.Type, 0, templateGroup);
 
-            Console.WriteLine(result);
             return result;
         }
 
@@ -181,7 +181,7 @@ namespace CodeGenerationAPI.Services
                 classNodesDictionary.Add(classNode.Id, classNode);
 
             ResolveInheritance(classNodesDictionary);
-
+            ResolveFriendClasses(classNodesDictionary);
 
 
             foreach (var packageNode in packageNodes)
@@ -373,6 +373,21 @@ namespace CodeGenerationAPI.Services
                         }
                 }
         }
+
+        private void ResolveFriendClasses(Dictionary<string, ClassNodeModel> classNodes)
+        {
+            foreach (var classNode in classNodes.Values)
+                if (classNode.ClassData.FriendClassesIds != null)
+                {
+                    foreach (var friendClassId in classNode.ClassData.FriendClassesIds)
+                    {
+                        if (classNode.ClassData.FriendClasses == null)
+                            classNode.ClassData.FriendClasses = new();
+                        classNode.ClassData.FriendClasses.Add(classNodes[friendClassId].ClassData);
+                    }
+                }
+        }
+
 
         // Checks if all the names in a class model are valid (class name, method names, return types etc)
         // Throws a GenerationException if an invalid name is found

@@ -1,5 +1,5 @@
 class(ClassName, Constructors, DestructorContents, Properties, PublicProperties, PrivateProperties, ProtectedProperties, 
-    PublicMethods, PrivateMethods, ProtectedMethods, InheritedClasses) ::= <<
+    PublicMethods, PrivateMethods, ProtectedMethods, InheritedClasses, FriendClasses) ::= <<
 class $ClassName$ $if(InheritedClasses)$:$endif$ $
                     InheritedClasses : {inheritedClass | $inheritedClass.accessSpecifier$ $inheritedClass.name$}; separator=", "$
 {
@@ -51,7 +51,10 @@ public:
             }$$
     Properties : {property | $
             if(property.generateGetter)$$\t$$getter(property)$$\n$$endif$
-            }$
+            }$$
+
+
+    FriendClasses: {friendClass | $\t$friend class $friendClass.Name$;}; separator="\n"$
 }
 >>
 
