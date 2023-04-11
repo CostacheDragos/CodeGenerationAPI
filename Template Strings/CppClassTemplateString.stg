@@ -59,7 +59,7 @@ public:
 >>
 
 dataType(type) ::= <<
-$if(type.IsConst)$const $endif$$type.name$$expandPointerList(type.PointerList)$
+$if(type.IsConst)$const $endif$$type.name$$expandPointerList(type.PointerList)$$if(type.IsRef)$&$endif$
 >>
 expandPointerList(pointerList) ::= <<
 $pointerList : {pointer | $if(pointer.isConst)$*const$else$*$endif$}$

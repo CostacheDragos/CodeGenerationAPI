@@ -26,8 +26,27 @@ namespace CodeGenerationAPI.Services
             m_stringTemplatesPathsConfig = stringTemplatesPathsConfig;
         }
 
-        private string RecursiveDestructorGeneration(string currentVariableName, DataTypeModel dataTypeModel, int currentPointerIdx, TemplateGroup templateGroup)
+        private string RecursiveDestructorGeneration(string currentVariableName, DataTypeModel dataTypeModel, 
+            int currentStaticArrayDimensionIdx, int currentPointerIdx, TemplateGroup templateGroup)
         {
+            // If the variable is also a static array on n dimensions, we first need to wrap
+            // all the deletions is for loops
+            string? nextVariableName;
+            if (currentStaticArrayDimensionIdx != dataTypeModel.ArrayDimensions.Count)
+            {
+                var idxName = $"{dataTypeModel.ArrayDimensions[currentStaticArrayDimensionIdx].ArrayLengthFieldName}Idx";
+                nextVariableName = $"{currentVariableName}[{idxName}]";
+
+                var staticIterateTemplate = templateGroup.GetInstanceOf("iterateWithoutDeleting");
+                staticIterateTemplate.Add("IndexName", idxName);
+                staticIterateTemplate.Add("LengthVariableName", dataTypeModel.PointerList[currentPointerIdx].ArrayLengthFieldName);
+                staticIterateTemplate.Add("LoopContents",
+                    RecursiveDestructorGeneration(nextVariableName, dataTypeModel, currentStaticArrayDimensionIdx + 1,
+                    currentPointerIdx, templateGroup));
+
+                return staticIterateTemplate.Render();
+            }
+
             if (currentPointerIdx == dataTypeModel.PointerList.Count - 1)
             {
                 var pointerDeleteTemplate = templateGroup.GetInstanceOf("pointerDelete");
@@ -36,7 +55,6 @@ namespace CodeGenerationAPI.Services
                 return pointerDeleteTemplate.Render();
             }
 
-            string? nextVariableName;
             if (dataTypeModel.PointerList[currentPointerIdx].IsArray)
             {
                 var idxName = $"{dataTypeModel.PointerList[currentPointerIdx].ArrayLengthFieldName}Idx";
@@ -47,7 +65,8 @@ namespace CodeGenerationAPI.Services
                 pointerDeleteTemplate.Add("IndexName", idxName);
                 pointerDeleteTemplate.Add("LengthVariableName", dataTypeModel.PointerList[currentPointerIdx].ArrayLengthFieldName);
                 pointerDeleteTemplate.Add("LoopContents",
-                    RecursiveDestructorGeneration(nextVariableName, dataTypeModel, currentPointerIdx + 1, templateGroup));
+                    RecursiveDestructorGeneration(nextVariableName, dataTypeModel, currentStaticArrayDimensionIdx,
+                    currentPointerIdx + 1, templateGroup));
 
                 return pointerDeleteTemplate.Render();
             }
@@ -59,7 +78,8 @@ namespace CodeGenerationAPI.Services
                 pointerDeleteTemplate.Add("PointerName", currentVariableName);
                 pointerDeleteTemplate.Add("IsArray",false);
 
-                return RecursiveDestructorGeneration(nextVariableName, dataTypeModel, currentPointerIdx + 1, templateGroup) +
+                return RecursiveDestructorGeneration(nextVariableName, dataTypeModel, currentStaticArrayDimensionIdx,
+                    currentPointerIdx + 1, templateGroup) +
                     pointerDeleteTemplate.Render();
             }
         }
@@ -126,7 +146,7 @@ namespace CodeGenerationAPI.Services
 
             string result = string.Empty;
             foreach (var field in classModel.Destructor.DeletedFields)
-                result += RecursiveDestructorGeneration(field.Name, field.Type, 0, templateGroup);
+                result += RecursiveDestructorGeneration(field.Name, field.Type, 0, 0, templateGroup);
 
             return result;
         }
