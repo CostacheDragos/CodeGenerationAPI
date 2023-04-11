@@ -271,7 +271,15 @@ namespace CodeGenerationAPI.Services
                         if(field != null)
                         {
                             constructor.InitializedFields.Add(field);
-                            signature += $"{field.Type} ";
+                            string currentFieldSignature = field.Type.Name;
+
+                            foreach (var pointer in field.Type.PointerList)
+                                currentFieldSignature += pointer.IsConst ? "*const" : "*";
+
+                            foreach (var dimension in field.Type.ArrayDimensions)
+                                currentFieldSignature += "[]";
+
+                            signature += $"{currentFieldSignature} ";
                         }
                     }
                 }
