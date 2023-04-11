@@ -1,11 +1,13 @@
-﻿namespace CodeGenerationAPI.Models.Class
+﻿using CodeGenerationAPI.Models.Variable;
+
+namespace CodeGenerationAPI.Models.Class
 {
     public class SetterModel
     {
         public PropertyModel SetProperty { get; set; }
-        public List<ParameterModel>? AdditionalParameters { get; set; }
+        public List<VariableModel>? AdditionalParameters { get; set; }
 
-        public SetterModel(PropertyModel setProperty, List<ParameterModel>? additionalParameters = null)
+        public SetterModel(PropertyModel setProperty, List<VariableModel>? additionalParameters = null)
         {
             SetProperty = setProperty;
             AdditionalParameters = additionalParameters;

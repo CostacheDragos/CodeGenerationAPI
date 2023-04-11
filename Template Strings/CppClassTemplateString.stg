@@ -59,23 +59,35 @@ public:
 >>
 
 dataType(type) ::= <<
-$if(type.IsConst)$const $endif$$type.name$$type.pointerList : {pointer | $if(pointer.isConst)$*const$else$*$endif$}$
+$if(type.IsConst)$const $endif$$type.name$$expandPointerList(type.PointerList)$
+>>
+expandPointerList(pointerList) ::= <<
+$pointerList : {pointer | $if(pointer.isConst)$*const$else$*$endif$}$
+>>
+expandStaticArrayData(arrayDimensions) ::= <<
+$arrayDimensions : {dimension | [$dimension.MaxLength$]}$
+>>
+expandVariableDefinition(var) ::= <<
+$dataType(var.Type)$ $var.Name$$expandStaticArrayData(var.Type.ArrayDimensions)$
 >>
 
+
 constructor(constructorData, className) ::= <<
-$className$($constructorData.initializedFields : {field | $dataType(field.type)$$if(field.IsArray)$*$endif$ $field.name$}; separator=", "$)$
+$className$($constructorData.initializedFields : {field | $expandVariableDefinition(field)$}; separator=", "$)$
     if(constructorData.initializedFields)$ : $endif$$
     constructorData.initializedFields : {field | $field.name$ { $field.name$ \}}; separator=", "$ {}
 >>
 
 
 property(propertyData) ::= <<
-$if(propertyData.IsStatic)$static inline $endif$$dataType(propertyData.type)$ $propertyData.name$$if(propertyData.IsArray)$[$propertyData.MaxArrayLength$]$endif$;
+$if(propertyData.IsStatic)$static inline $endif$$expandVariableDefinition(propertyData)$;
 >>
 
 setter(propertyData) ::= <<
 $if(propertyData.IsStatic)$static $endif$void Set$propertyData.name; format="cap"$($
-    dataType(propertyData.type)$$if(propertyData.IsArray)$*$endif$ new$propertyData.name; format="cap"$$
+    dataType(propertyData.type)$ new$propertyData.name; format="cap"$$
+        propertyData.type.ArrayDimensions: {dimension | [$dimension.MaxLength$]}
+    $$
         if(propertyData.SetterModel.AdditionalParameters)$, $endif$$
         propertyData.SetterModel.AdditionalParameters: {parameter | $dataType(parameter.type)$ new$parameter.name; format="cap"$}; separator=", "$)
     { 
@@ -86,9 +98,13 @@ $if(propertyData.IsStatic)$static $endif$void Set$propertyData.name; format="cap
 
 getter(propertyData) ::= <<
 $if(propertyData.IsStatic)
-$static $dataType(propertyData.type)$$if(propertyData.IsArray)$*$endif$ Get$propertyData.name; format="cap"$(){ return $propertyData.name$; \}$
+$static $dataType(propertyData.type)$$
+    propertyData.type.ArrayDimensions: {dimension | *}
+$ Get$propertyData.name; format="cap"$(){ return $propertyData.name$; \}$
 else
-$$dataType(propertyData.type)$$if(propertyData.IsArray)$*$endif$ Get$propertyData.name; format="cap"$(){ return this.$propertyData.name$; \}$
+$$dataType(propertyData.type)$$
+    propertyData.type.ArrayDimensions: {dimension | *}
+$ Get$propertyData.name; format="cap"$(){ return this.$propertyData.name$; \}$
 endif$
 >>
 
@@ -96,15 +112,8 @@ endif$
 method(methodData) ::= <<
 $if(methodData.IsVirtual)$virtual $endif$$
  if(methodData.IsStatic)$static $endif$$dataType(methodData.returnType)$ $methodData.name$($
-        methodData.parameters : {parameter | $parameter(parameter)$}; separator=", "$);
+        methodData.parameters : {parameter | $expandVariableDefinition(parameter)$}; separator=", "$);
 >>
-
-parameter(parameterData) ::= <<
-$dataType(parameterData.type)$$
-    if(propertyData.IsArray)$*$endif$$
-    if(parameterData.IsRef)$&$endif$ $parameterData.name$
->>
-
 
 
 namespace(FullPackagePath, ClassCode) ::= <<

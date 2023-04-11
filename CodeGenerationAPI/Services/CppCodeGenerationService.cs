@@ -168,7 +168,7 @@ namespace CodeGenerationAPI.Services
                 // ResolvePointerArrayLengths modifies classNode.ClassData.Properties
                 var temp = new List<PropertyModel>(classNode.ClassData.Properties);
                 foreach (var property in temp)
-                    ResolvePointerArrayLengths(property, classNode.ClassData);
+                    ResolveArrayLengthsVariables(property, classNode.ClassData);
             }
 
             // In order to establish the connections quicker we use a dictionary
@@ -191,12 +191,13 @@ namespace CodeGenerationAPI.Services
         }
 
 
-        // For fields that are pointers representing arrays, we need to create additional
+        // For fields that are arrays, we need to create additional
         // fields that represent the length of those arrays and have those additional fields
-        // added to constructors where the pointer is present as well as the setter of those pointers
-        private void ResolvePointerArrayLengths(PropertyModel propertyModel, ClassModel classModel)
+        // added to constructors where the field is present, the setter of those fields
+        // as well as in the class as a whole new field
+        private void ResolveArrayLengthsVariables(PropertyModel propertyModel, ClassModel classModel)
         {
-            if (propertyModel.Type.PointerList.Count == 0)
+            if (propertyModel.Type.PointerList.Count == 0 && propertyModel.Type.ArrayDimensions.Count == 0)
                 return;
 
             List<ConstructorModel> linkedConstructors = new();
@@ -206,43 +207,80 @@ namespace CodeGenerationAPI.Services
 
             foreach (var pointer in propertyModel.Type.PointerList)
             {
-                if(pointer.IsArray)
+                if(!pointer.IsArray) continue;
+
+                // Add the additional field to the class field list
+                classModel.Properties.Add(new()
                 {
-                    // Add the additional field to the class field list
-                    classModel.Properties.Add(new()
+                    Name = pointer.ArrayLengthFieldName,
+                    Type = new DataTypeModel { Name = "unsigned" },
+                    AccessModifier = propertyModel.AccessModifier,
+                    IsStatic = propertyModel.IsStatic,
+                });
+
+                // Add the additional field to the setter of the array (if any will be generated)
+                if (propertyModel.GenerateSetter)
+                {
+                    if (propertyModel.SetterModel == null)
+                        propertyModel.SetterModel = new(propertyModel, new());
+
+                    if(propertyModel.SetterModel.AdditionalParameters == null)
+                        propertyModel.SetterModel.AdditionalParameters = new();
+
+                    propertyModel.SetterModel.AdditionalParameters.Add(new()
                     {
                         Name = pointer.ArrayLengthFieldName,
                         Type = new DataTypeModel { Name = "unsigned" },
-                        AccessModifier = propertyModel.AccessModifier,
-                        IsStatic = propertyModel.IsStatic,
                     });
+                }
 
-                    // Add the additional field to the setter of the array (if any will be generated)
-                    if (propertyModel.GenerateSetter)
-                    {
-                        if (propertyModel.SetterModel == null)
-                            propertyModel.SetterModel = new(propertyModel, new());
-
-                        if(propertyModel.SetterModel.AdditionalParameters == null)
-                            propertyModel.SetterModel.AdditionalParameters = new();
-
-                        propertyModel.SetterModel.AdditionalParameters.Add(new()
+                foreach(var constructor in linkedConstructors)
+                    if(constructor.InitializedFields != null)
+                        constructor.InitializedFields.Add(new()
                         {
                             Name = pointer.ArrayLengthFieldName,
                             Type = new DataTypeModel { Name = "unsigned" },
+                            AccessModifier = propertyModel.AccessModifier,
+                            IsStatic = propertyModel.IsStatic,
                         });
-                    }
+            }
 
-                    foreach(var constructor in linkedConstructors)
-                        if(constructor.InitializedFields != null)
-                            constructor.InitializedFields.Add(new()
-                            {
-                                Name = pointer.ArrayLengthFieldName,
-                                Type = new DataTypeModel { Name = "unsigned" },
-                                AccessModifier = propertyModel.AccessModifier,
-                                IsStatic = propertyModel.IsStatic,
-                            });
+            foreach (var dimension in propertyModel.Type.ArrayDimensions)
+            {
+                // Add the additional field to the class field list
+                classModel.Properties.Add(new()
+                {
+                    Name = dimension.ArrayLengthFieldName,
+                    Type = new DataTypeModel { Name = "unsigned" },
+                    AccessModifier = propertyModel.AccessModifier,
+                    IsStatic = propertyModel.IsStatic,
+                });
+
+                // Add the additional field to the setter of the array (if any will be generated)
+                if (propertyModel.GenerateSetter)
+                {
+                    if (propertyModel.SetterModel == null)
+                        propertyModel.SetterModel = new(propertyModel, new());
+
+                    if (propertyModel.SetterModel.AdditionalParameters == null)
+                        propertyModel.SetterModel.AdditionalParameters = new();
+
+                    propertyModel.SetterModel.AdditionalParameters.Add(new()
+                    {
+                        Name = dimension.ArrayLengthFieldName,
+                        Type = new DataTypeModel { Name = "unsigned" },
+                    });
                 }
+
+                foreach (var constructor in linkedConstructors)
+                    if (constructor.InitializedFields != null)
+                        constructor.InitializedFields.Add(new()
+                        {
+                            Name = dimension.ArrayLengthFieldName,
+                            Type = new DataTypeModel { Name = "unsigned" },
+                            AccessModifier = propertyModel.AccessModifier,
+                            IsStatic = propertyModel.IsStatic,
+                        });
             }
         }
 

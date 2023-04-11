@@ -4,6 +4,7 @@
     {
         public string Name { get; set; } = string.Empty;
         public bool IsConst { get; set; } = false;
+        public bool IsRef { get; set; } = false;
         public List<Pointer> PointerList { get; set; } = new();
         public List<ArrayDimention> ArrayDimensions { get; set; } = new();
 

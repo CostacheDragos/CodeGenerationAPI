@@ -12,7 +12,7 @@ namespace CodeGenerationAPI.Models.Class
         public string Name { get; set; } = string.Empty;
         public string AccessModifier { get; set; } = string.Empty;
         public DataTypeModel ReturnType { get; set; } = new();
-        public List<ParameterModel>? Parameters { get; set; }
+        public List<VariableModel>? Parameters { get; set; }
         public bool IsVirtual { get; set; } = false;
         public bool IsStatic { get; set; } = false;
     }
