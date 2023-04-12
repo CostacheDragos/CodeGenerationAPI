@@ -42,7 +42,31 @@ namespace CodeGenerationAPI.Services
                 if (classModel.GenerateCopyConstructor)
                 {
                     classModel.Constructors ??= new();
-                    classModel.Constructors.Add(GenerateCopyConstructorCode(classModel));
+                    var copyConstructor = GenerateCopyConstructorCode(classModel);
+                    classModel.Constructors.Add(copyConstructor);
+
+                    if(classModel.GenerateCopyAssignOperator)
+                    {
+                        var copyAssignTemplate = classTemplateGroup.GetInstanceOf("copyAssignOperator");
+                        copyAssignTemplate.Add("ClassName", classModel.Name);
+                        // Properties represent the fields that require a simple = assignment, no memory allocation
+                        copyAssignTemplate.Add("Properties", classModel.Properties.Where(prop =>
+                            prop.Type.ArrayDimensions.Count == 0 && prop.Type.PointerList.Count == 0));
+                        copyAssignTemplate.Add("DynamicAllocationBodyCode", copyConstructor.BodyCode);
+
+                        classTemplate.Add("CopyAssignOperator", copyAssignTemplate.Render());
+                    }
+                }
+                else if(classModel.GenerateCopyAssignOperator)
+                {
+                    var copyAssignTemplate = classTemplateGroup.GetInstanceOf("copyAssignOperator");
+                    copyAssignTemplate.Add("ClassName", classModel.Name);
+                    // Properties represent the fields that require a simple = assignment, no memory allocation
+                    copyAssignTemplate.Add("Properties", classModel.Properties.Where(prop => 
+                        prop.Type.ArrayDimensions.Count == 0 && prop.Type.PointerList.Count == 0)); 
+                    copyAssignTemplate.Add("DynamicAllocationBodyCode", GenerateCopyConstructorCode(classModel).BodyCode);
+                    
+                    classTemplate.Add("CopyAssignOperator", copyAssignTemplate.Render());
                 }
                 classTemplate.Add("Constructors", classModel.Constructors);
 
@@ -108,7 +132,7 @@ namespace CodeGenerationAPI.Services
 
                 var staticIterateTemplate = templateGroup.GetInstanceOf("iterateArray");
                 staticIterateTemplate.Add("IndexName", idxName);
-                staticIterateTemplate.Add("LengthVariableName", dataTypeModel.PointerList[currentPointerIdx].ArrayLengthFieldName);
+                staticIterateTemplate.Add("LengthVariableName", dataTypeModel.ArrayDimensions[currentStaticArrayDimensionIdx].ArrayLengthFieldName);
                 staticIterateTemplate.Add("LoopContents",
                     RecursivePointerDeepCopyCodeGeneration(nextVariableName, nextOtherVariableName,
                     dataTypeModel, currentStaticArrayDimensionIdx + 1,
@@ -198,7 +222,7 @@ namespace CodeGenerationAPI.Services
 
                 var staticIterateTemplate = templateGroup.GetInstanceOf("iterateArray");
                 staticIterateTemplate.Add("IndexName", idxName);
-                staticIterateTemplate.Add("LengthVariableName", dataTypeModel.PointerList[currentPointerIdx].ArrayLengthFieldName);
+                staticIterateTemplate.Add("LengthVariableName", dataTypeModel.ArrayDimensions[currentStaticArrayDimensionIdx].ArrayLengthFieldName);
                 staticIterateTemplate.Add("LoopContents",
                     RecursivePointerDeletionCodeGeneration(nextVariableName, dataTypeModel, currentStaticArrayDimensionIdx + 1,
                     currentPointerIdx, templateGroup));

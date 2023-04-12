@@ -26,10 +26,3 @@ for(unsigned $IndexName$ = 0; $IndexName$ < $LengthVariableName$; $IndexName$++)
 }
 
 >>
-
-
-copyConstructor(ClassName, InitializationListFields, BodyCode) ::= <<
-$ClassName$($InitializationListFields : {field | $expandVariableDefinition(field)$}; separator=", "$)$
-    if(InitializationListFields)$ : $endif$$
-    InitializationListFields : {field | $field.name$ { $field.name$ \}}; separator=", "$ {}
->>

@@ -1,4 +1,4 @@
-class(ClassName, Constructors, DestructorContents, Properties, PublicProperties, PrivateProperties, ProtectedProperties, 
+class(ClassName, Constructors, CopyAssignOperator, DestructorContents, Properties, PublicProperties, PrivateProperties, ProtectedProperties, 
     PublicMethods, PrivateMethods, ProtectedMethods, InheritedClasses, FriendClasses) ::= <<
 class $ClassName$ $if(InheritedClasses)$:$endif$ $
                     InheritedClasses : {inheritedClass | $inheritedClass.accessSpecifier$ $inheritedClass.name$}; separator=", "$
@@ -27,6 +27,10 @@ public:
         if(Constructors)$$\n$$
         endif
     $$
+    
+    if(CopyAssignOperator)
+    $$CopyAssignOperator$$\n$
+    $endif$$
 
     if(DestructorContents)
     $$\t$~$ClassName$()
@@ -120,6 +124,14 @@ method(methodData) ::= <<
 $if(methodData.IsVirtual)$virtual $endif$$
  if(methodData.IsStatic)$static $endif$$dataType(methodData.returnType)$ $methodData.name$($
         methodData.parameters : {parameter | $expandVariableDefinition(parameter)$}; separator=", "$);
+>>
+
+copyAssignOperator(ClassName, Properties, DynamicAllocationBodyCode) ::= <<
+    $ClassName$& operator=(const $ClassName$& other)
+    {
+        $Properties : {property | $property.Name$ = other.$property.Name$;}; separator="\n"$
+        $DynamicAllocationBodyCode$
+    }
 >>
 
 
