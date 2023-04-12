@@ -9,6 +9,7 @@ namespace CodeGenerationAPI.Models.Class
     public class ClassModel
     {
         public string Name { get; set; } = string.Empty;                // Name of the class
+        public bool GenerateCopyConstructor { get; set; } = false;
         public List<ConstructorModel>? Constructors { get; set; }       // List of constructors that need to be generated
         
         public bool GenerateDestructor { get; set; } = false;

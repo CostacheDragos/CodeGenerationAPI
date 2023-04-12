@@ -1,0 +1,35 @@
+pointerDelete(PointerName, IsArray) ::= <<
+delete$if(IsArray)$[]$endif$ $PointerName$;
+
+>>
+
+iterateThenDelete(PointerName, IndexName, LengthVariableName, LoopContents) ::= <<
+$iterateArray(IndexName, LengthVariableName, LoopContents)$
+$pointerDelete(PointerName, true)$
+>>
+
+
+pointerAllocate(PointerName, DataType, IsArray, LengthVariableName) ::= <<
+$PointerName$ = new $DataType$$if(IsArray)$[$LengthVariableName$]$endif$;
+
+>>
+
+allocateThenIterate(PointerName, IndexName, DataType, LengthVariableName, LoopContents) ::= <<
+$pointerAllocate(PointerName, DataType, true, LengthVariableName)$
+$iterateArray(IndexName, LengthVariableName, LoopContents)$
+>>
+
+iterateArray(IndexName, LengthVariableName, LoopContents) ::= <<
+for(unsigned $IndexName$ = 0; $IndexName$ < $LengthVariableName$; $IndexName$++)
+{
+    $LoopContents$
+}
+
+>>
+
+
+copyConstructor(ClassName, InitializationListFields, BodyCode) ::= <<
+$ClassName$($InitializationListFields : {field | $expandVariableDefinition(field)$}; separator=", "$)$
+    if(InitializationListFields)$ : $endif$$
+    InitializationListFields : {field | $field.name$ { $field.name$ \}}; separator=", "$ {}
+>>

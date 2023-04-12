@@ -73,9 +73,16 @@ $dataType(var.Type)$ $var.Name$$expandStaticArrayData(var.Type.ArrayDimensions)$
 
 
 constructor(constructorData, className) ::= <<
-$className$($constructorData.initializedFields : {field | $expandVariableDefinition(field)$}; separator=", "$)$
+$className$($if(constructorData.IsCopyConstructor)$const $className$& other$
+    else$$constructorData.initializedFields : {field | $expandVariableDefinition(field)$}; separator=", "$$
+    endif$)$
     if(constructorData.initializedFields)$ : $endif$$
-    constructorData.initializedFields : {field | $field.name$ { $field.name$ \}}; separator=", "$ {}
+    constructorData.initializedFields : {field | $field.name$ { $if(constructorData.IsCopyConstructor)$other.$endif$$field.name$ \}}; separator=", "$ $
+if(constructorData.bodyCode)$
+{
+    $constructorData.bodyCode$
+}$else
+${}$endif$
 >>
 
 
