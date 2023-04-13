@@ -1,6 +1,7 @@
 class(ClassName, Constructors, CopyAssignOperator, DestructorContents, Properties, PublicProperties, PrivateProperties, ProtectedProperties, 
-    PublicMethods, PrivateMethods, ProtectedMethods, InheritedClasses, FriendClasses) ::= <<
-class $ClassName$ $if(InheritedClasses)$:$endif$ $
+    PublicMethods, PrivateMethods, ProtectedMethods, InheritedClasses, FriendClasses, TemplateTypesData) ::= <<
+$if(TemplateTypesData)$template <$TemplateTypesData : {typename | class $typename.name$}; separator=", "$>
+$endif$class $ClassName$ $if(InheritedClasses)$:$endif$ $
                     InheritedClasses : {inheritedClass | $inheritedClass.accessSpecifier$ $inheritedClass.name$}; separator=", "$
 {
 // Generated Private Members

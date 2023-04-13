@@ -88,6 +88,12 @@ namespace CodeGenerationAPI.Services
                 classTemplate.Add("InheritedClasses", classModel.InheritedClasses);
                 classTemplate.Add("FriendClasses", classModel.FriendClasses);
 
+                if(classModel.IsTemplate)
+                    classTemplate.Add("TemplateTypesData", classModel.TemplateTypesData);
+                else
+                    classTemplate.Add("TemplateTypesData", null);
+
+
                 if (classModel.FullPackagePath != null)
                 {
                     // If the class in contained in a package, use the namespace template to wrap it

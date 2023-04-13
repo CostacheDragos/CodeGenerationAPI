@@ -23,7 +23,11 @@ namespace CodeGenerationAPI.Models.Class
         
         public List<string>? FriendClassesIds { get; set; }
         public List<ClassModel>? FriendClasses { get; set; }
-        
+
+
+        public bool IsTemplate { get; set; } = false;
+        public List<TemplateType>? TemplateTypesData { get; set; }
+
 
         public string? FullPackagePath { get; set; }     // The full path containing the names of all the nested packages above this class
     }
@@ -34,4 +38,8 @@ namespace CodeGenerationAPI.Models.Class
         public string AccessSpecifier { get; set; } = string.Empty;
     }
 
+    public class TemplateType
+    {
+        public string Name { get; set; } = "T";
+    }
 }
