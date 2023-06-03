@@ -3,26 +3,26 @@ class(ClassName, Constructors, CopyAssignOperator, DestructorContents, Propertie
 $if(TemplateTypesData)$template <$TemplateTypesData : {typename | class $typename.name$}; separator=", "$>
 $endif$class $ClassName$ $if(InheritedClasses)$:$endif$ $
                     InheritedClasses : {inheritedClass | $inheritedClass.accessSpecifier$ $inheritedClass.name$}; separator=", "$
-{
-// Generated Private Members
+{$
+if(PrivateProperties || PrivateMethods)$
 private:
-    $PrivateProperties : {property | $property(property)$}; separator="\n"$$
+$endif$$
+    PrivateProperties : {property | $\t$$property(property)$}; separator="\n"$$
         if(PrivateProperties)$$\n$$
         endif
     $$
     
-    PrivateMethods : {methodData | $\t$$method(methodData)$}; separator="\n"$
+    PrivateMethods : {methodData | $\t$$method(methodData)$}; separator="\n"$$
 
-// Generated Protected Members
+if(ProtectedProperties || ProtectedMethods)$
 protected:
-    $ProtectedProperties : {property | $property(property)$}; separator="\n"$$
+$endif$$
+    ProtectedProperties : {property | $\t$$property(property)$}; separator="\n"$$
         if(ProtectedProperties)$$\n$$
         endif
     $$
     
-    ProtectedMethods : {methodData | $\t$$method(methodData)$}; separator="\n"$
-
-// Generated Public Members
+    ProtectedMethods : {methodData | $\t$$method(methodData)$}; separator="\n"$    
 public:
     $Constructors : {constructorData | $constructor(constructorData, ClassName)$}; separator="\n"$$
         if(Constructors)$$\n$$
@@ -49,8 +49,7 @@ public:
     PublicMethods : {methodData | $\t$$method(methodData)$}; separator="\n"$$
         if(PublicMethods)$$\n$$
         endif
-    $
-    $\n$$\t$// Setters & Getters$\n$$
+    $$
     Properties : {property | $
             if(property.generateSetter)$$\t$$setter(property)$$\n$$endif$
             }$$
@@ -110,14 +109,9 @@ $if(propertyData.IsStatic)$static $endif$void Set$propertyData.name; format="cap
 
 getter(propertyData) ::= <<
 $if(propertyData.IsStatic)
-$static $dataType(propertyData.type)$$
+$static $endif$$dataType(propertyData.type)$$
     propertyData.type.ArrayDimensions: {dimension | *}
-$ Get$propertyData.name; format="cap"$(){ return $propertyData.name$; \}$
-else
-$$dataType(propertyData.type)$$
-    propertyData.type.ArrayDimensions: {dimension | *}
-$ Get$propertyData.name; format="cap"$(){ return this.$propertyData.name$; \}$
-endif$
+$ Get$propertyData.name; format="cap"$(){ return $propertyData.name$; \}
 >>
 
 
