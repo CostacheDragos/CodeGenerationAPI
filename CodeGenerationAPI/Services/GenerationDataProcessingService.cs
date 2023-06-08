@@ -355,9 +355,16 @@ namespace CodeGenerationAPI.Services
             if (!namingPatternRegex.IsMatch(classModel.Name))
                 throw new GenerationException($"The name of the class \"{classModel.Name}\" is not valid!");
 
-            // Check properties names and types
+            // Check properties names and types, as well as name conflicts between properties
+            HashSet<string> names = new();
             foreach (var property in classModel.Properties)
             {
+                if(names.Contains(property.Name))
+                    throw new GenerationException($"Property \"{property.Name}\", from the class " +
+                        $"\"{classModel.Name}\", has multiple definitions!");
+
+                names.Add(property.Name);
+
                 if (!namingPatternRegex.IsMatch(property.Name))
                     throw new GenerationException($"The name of the property \"{property.Name}\", from the class " +
                         $"\"{classModel.Name}\", is not valid!");
