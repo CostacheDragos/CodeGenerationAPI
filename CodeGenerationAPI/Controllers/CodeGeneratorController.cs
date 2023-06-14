@@ -14,8 +14,9 @@ namespace CodeGenerationAPI.Controllers
     {
         private readonly ICppCodeGenerationService m_cppCodeGeneratorService;
 
-        public CodeGeneratorController(ICppCodeGenerationService cppCodeGeneratorService)
+        public CodeGeneratorController(ICppCodeGenerationService cppCodeGeneratorService, IWebHostEnvironment webHostEnvironment)
         {
+            Console.WriteLine(webHostEnvironment.ContentRootPath);
             m_cppCodeGeneratorService = cppCodeGeneratorService;
         }
 

@@ -7,11 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddSingleton<ICppCodeGenerationService, CppCodeGenerationService>();
 builder.Services.AddSingleton<IGenerationDataProcessingService, GenerationDataProcessingService>();
-builder.Services.AddSingleton<IFirestoreService>(sp =>
-{
-    string projectId = builder.Configuration.GetSection("FirebaseProjectId").Value;
-    return new FirestoreService(projectId);
-});
 
 // Get the templates paths from appsettings.json
 builder.Services.AddSingleton(builder.Configuration.GetSection("TemplatePaths").Get<StringTemplatesPathsConfig>());
